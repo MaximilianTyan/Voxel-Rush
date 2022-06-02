@@ -3,10 +3,11 @@ import pyrr
 import numpy as np 
 
 class Transformation3D: 
-    def __init__(self, euler = pyrr.euler.create(), center = pyrr.Vector3(), translation = pyrr.Vector3()):
+    def __init__(self, euler = pyrr.euler.create(), center = pyrr.Vector3(), translation = pyrr.Vector3(), offset = pyrr.Vector3(),):
         self.rotation_euler = euler.copy()
         self.rotation_center = center.copy()
         self.translation = translation.copy()
+        self.offset = offset.copy()
 
 class Object:
     def __init__(self, vao, nb_triangle, program, texture):
@@ -39,6 +40,15 @@ class Object3D(Object):
         # Modifie la variable pour le programme courant
         translation = self.transformation.translation
         GL.glUniform4f(loc, translation.x, translation.y, translation.z, 0)
+        
+        # Récupère l'identifiant de la variable pour le programme courant
+        loc = GL.glGetUniformLocation(self.program, "offset_model")
+        # Vérifie que la variable existe
+        if (loc == -1) :
+            print("Pas de variable uniforme : offset_model")
+        # Modifie la variable pour le programme courant
+        offset = self.transformation.offset
+        GL.glUniform4f(loc, offset.x, offset.y, offset.z, 0)
 
         # Récupère l'identifiant de la variable pour le programme courant
         loc = GL.glGetUniformLocation(self.program, "rotation_center_model")
@@ -77,7 +87,7 @@ class Text(Object):
         loc = GL.glGetUniformLocation(self.program, "size")
         if (loc == -1) :
             print("Pas de variable uniforme : size")
-        GL.glUniform2f(loc, size[0], size[1], 0)
+        GL.glUniform2f(loc, size[0], size[1])
         GL.glBindVertexArray(self.vao)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
         for idx, c in enumerate(self.value):

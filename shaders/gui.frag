@@ -22,7 +22,7 @@ void main (void)
 
   vec2 tex_coord = vec2(texture_x, texture_y) + vtex * vec2(x_tick, y_tick) + vec2(0.0, 0.05);
 
-  color = texture2D(texture, tex_coord);
+  color = texture(texture, tex_coord);
   if(length(color.xyz) < 0.1)
     discard;
 }

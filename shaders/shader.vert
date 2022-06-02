@@ -8,10 +8,12 @@ layout (location = 3) in vec2 tex;
 uniform mat4 rotation_model;
 uniform vec4 rotation_center_model;
 uniform vec4 translation_model;
+uniform vec4 offset_model;
 
 uniform mat4 rotation_view;
 uniform vec4 rotation_center_view;
 uniform vec4 translation_view;
+uniform vec4 offset_view;
 
 uniform mat4 projection;
 
@@ -28,9 +30,9 @@ void main (void)
   coordonnee_3d = position;
 
   //application de la deformation du model
-  vec4 p_model = rotation_model*(vec4(position, 1.0)-rotation_center_model)+rotation_center_model+translation_model;
+  vec4 p_model = rotation_model*(vec4(position, 1.0)-rotation_center_model)+rotation_center_model+translation_model+offset_model;
   //application de la deformation de la vue
-  vec4 p_modelview = rotation_view*(p_model-rotation_center_view)+rotation_center_view+translation_view;
+  vec4 p_modelview = rotation_view*(p_model-rotation_center_view)+rotation_center_view+translation_view+offset_view;
 
   coordonnee_3d_locale = p_modelview.xyz;
 

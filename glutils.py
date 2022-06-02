@@ -44,7 +44,7 @@ def create_program_from_file(vs_file, fs_file):
 def load_texture(filename):
     if not os.path.exists(filename):
         print(f'{25*"-"}\nError reading file:\n{filename}\n{25*"-"}')
-    im = Image.open(filename).transpose(Image.Transpose.FLIP_TOP_BOTTOM).convert('RGBA')
+    im = Image.open(filename).transpose(Image.FLIP_TOP_BOTTOM).convert('RGBA')
     texture_id = GL.glGenTextures(1)
     # sélection de la texture courante à partir de son identifiant
     GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)

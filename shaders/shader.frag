@@ -29,7 +29,7 @@ void main (void)
   vec4 white = vec4(1.0,1.0,1.0,0.0);
 
   //recuperation de la texture
-  vec4 color_texture = texture2D(texture, vtex);
+  vec4 color_texture = texture(texture, vtex);
   vec4 color_final   = vcolor*color_texture;
 
   //couleur finale
