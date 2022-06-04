@@ -4,6 +4,9 @@ import OpenGL.GL as GL
 import glfw
 import pyrr
 import numpy as np
+import time
+import ctypes
+
 from cpe3d import Object3D
 from reflist import reflist
 
@@ -30,6 +33,8 @@ class ViewerGL:
         GL.glClearColor(0.5, 0.6, 0.9, 1.0)
         print(f"OpenGL: {GL.glGetString(GL.GL_VERSION).decode('ascii')}")
 
+        self.prevtime = 0
+        self.clocked_objs= []
         self.objs = reflist()
         self.touch = {}
 
@@ -40,9 +45,19 @@ class ViewerGL:
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
             self.update_key()
+            
+            crt_time = time.time()
+            dt = crt_time - self.prevtime
+            self.prevtime = crt_time
+            
+            for obj in self.clocked_objs:
+                obj.tick_clock(dt, crt_time)
 
             for obj in self.objs:
+                if obj.program is None: 
+                    raise Exception(f"Le programme de rendu n'a pas été précisé : {obj.program} at {obj}")
                 GL.glUseProgram(obj.program)
+                
                 if isinstance(obj, Object3D):
                     self.update_camera(obj.program)
                 obj.draw()
@@ -59,10 +74,17 @@ class ViewerGL:
         self.touch[key] = action
     
     def add_object(self, obj):
-        self.objs.append(obj)
+        if isinstance(obj, list) or isinstance(obj, tuple):
+            for o in obj:
+                self.objs.append(o)
+        else:
+            self.objs.append(obj)
     
     def add_ref_object(self, ref, obj):
         self.objs.refappend(ref, obj)
+    
+    def add_clocked_object(self, obj):
+        self.clocked_objs.append(obj)
 
     def set_camera(self, cam):
         self.cam = cam

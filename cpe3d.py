@@ -3,7 +3,7 @@ import pyrr
 import numpy as np 
 
 class Transformation3D: 
-    def __init__(self, euler = pyrr.euler.create(), center = pyrr.Vector3(), translation = pyrr.Vector3(), offset = pyrr.Vector3(),):
+    def __init__(self, euler = pyrr.euler.create(), center = pyrr.Vector3(), translation = pyrr.Vector3(), offset = pyrr.Vector3()):
         self.rotation_euler = euler.copy()
         self.rotation_center = center.copy()
         self.translation = translation.copy()
@@ -16,21 +16,38 @@ class Object:
         self.program = program
         self.texture = texture
         self.visible = True
+        self.wireframe = False
 
     def draw(self):
-        if self.visible : 
-            GL.glUseProgram(self.program)
+        if self.visible:
+            if type(self).program is None: 
+                raise Exception("Le programme de rendu n'a pas été précisé")
+            GL.glUseProgram(type(self).program)
             GL.glBindVertexArray(self.vao)
-            GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-            GL.glDrawElements(GL.GL_TRIANGLES, 3*self.nb_triangle, GL.GL_UNSIGNED_INT, None)
+            if self.texture is not None:
+                GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+            if self.wireframe:
+                draw_type = GL.GL_LINE_LOOP
+            else:
+                draw_type = GL.GL_TRIANGLES
+            GL.glDrawElements(draw_type, 3*self.nb_triangle, GL.GL_UNSIGNED_INT, None)
 
 class Object3D(Object):
-    def __init__(self, vao, nb_triangle, program, texture, transformation):
-        super().__init__(vao, nb_triangle, program, texture)
+    def __init__(self, vao, nb_triangle, texture=None, transformation=Transformation3D()):
+        super().__init__(vao, nb_triangle, type(self).program, texture)
         self.transformation = transformation
-
+    
+    @classmethod
+    def set_program(cls, program):
+        cls.program = program
+    
+    def get_coords(self):
+        return self.transformation.translation.x, self.transformation.translation.y, self.transformation.translation.z
+    
     def draw(self):
-        GL.glUseProgram(self.program)
+        if Object3D.program is None: 
+            raise Exception("Le programme de rendu n'a pas été précisé")
+        GL.glUseProgram(Object3D.program)
 
         # Récupère l'identifiant de la variable pour le programme courant
         loc = GL.glGetUniformLocation(self.program, "translation_model")
@@ -68,19 +85,30 @@ class Object3D(Object):
         super().draw()
 
 class Camera:
-    def __init__(self, transformation = Transformation3D(translation=pyrr.Vector3([0, 1, 0], dtype='float32')), projection = pyrr.matrix44.create_perspective_projection(60, 1, 0.01, 100)):
+    def __init__(self, transformation = Transformation3D(translation=pyrr.Vector3([0, 1, 0], dtype='float32')), projection=None):
         self.transformation = transformation
-        self.projection = projection
+        if projection is None:
+            self.ratio = 1  #(width / height)
+            self.fovy = 60  #degrees
+            self.fovx = self.fovy * self.ratio
+            self.projection = pyrr.matrix44.create_perspective_projection(self.fovy, self.ratio, 0.01, 100)
+            
 
 class Text(Object):
-    def __init__(self, value, bottomLeft, topRight, vao, nb_triangle, program, texture):
+    def __init__(self, value, bottomLeft, topRight, vao, nb_triangle, texture):
         self.value = value
         self.bottomLeft = bottomLeft
         self.topRight = topRight
-        super().__init__(vao, nb_triangle, program, texture)
+        super().__init__(vao, nb_triangle, type(self).program, texture)
+
+    @classmethod
+    def set_program(cls, program):
+        cls.program = program
 
     def draw(self):
-        GL.glUseProgram(self.program)
+        if Text.program is None: 
+            raise Exception("Le programme de rendu n'a pas été précisé")
+        GL.glUseProgram(Text.program)
         GL.glDisable(GL.GL_DEPTH_TEST)
         size = self.topRight-self.bottomLeft
         size[0] /= len(self.value)

@@ -1,47 +1,89 @@
 #coding:utf-8
 
-from click import password_option
 import glutils
 from mesh import Mesh
-from cpe3d import Object3D, Camera, Transformation3D, Text
+from cpe3d import Object3D, Transformation3D
 import numpy as np
-import OpenGL.GL as GL
 import pyrr
 
-class Obstacles(Object3D):
-    def __init__(self, program_id):
-        
-        m = Mesh.load_obj()
-        m.normalize()
-        m.apply_matrix(pyrr.matrix44.create_from_scale([2, 2, 2, 1]))
-        tr = Transformation3D()
-        tr.translation.y = -np.amin(m.vertices, axis=0)[1]
-        tr.translation.z = -5
-        tr.rotation_center.z = 0.2
-        texture = glutils.load_texture('stegosaurus.jpg')
-        super().__init__(m.load_to_gpu(), m.get_nb_triangles(), program_id, texture, tr)
-
-
-class Spike(Obstacles):
+class Spike(Object3D):
     def __init__(self, x, y, z, orientation='UP'):
-
+        
+        
+        points  = [ [0, 0, 0],  [1, 0, 0],  [0, 0, 1],     [1, 0, 1],      [0.5, 1, 0.5]]
+        #normals = [ [0, 0, 1],  [0, 0, 1],  [0, 0, 1],     [0, 0, 1],      [0, 0, 1]]
+        faces = [   [0,1,3],
+                    [0,2,3], 
+                    [0,4,2],
+                    [2,4,3], 
+                    [3,4,1],
+                    [1,4,0] ]
+        texcoords = [[0, 0],     [0, 1],       [0, 1],       [1, 1],            [0.5, 0.5]]
+        n = [0,0,1]
+        c = [1,1,1]
+        
+        
+        transformation = Transformation3D()
+        transformation.translation = pyrr.Vector3([x, y, z])
+        
+        transformation.rotation_center = pyrr.Vector3([0.5, 0.5, 0.5])
+        
         if orientation == 'UP':
-            pass
+            transformation.rotation_euler[pyrr.euler.index().pitch] = 0
         elif orientation == 'LEFT':
-            pass
+            transformation.rotation_euler[pyrr.euler.index().pitch] =  np.pi / 2
         elif orientation == 'DOWN':
-            pass
+            transformation.rotation_euler[pyrr.euler.index().pitch] =  np.pi
         else:
-            pass
+            raise LevelError(f"Spike orientation not supported: {orientation}")
+        
+        m = Mesh()
+        m.vertices = np.array([p + n + c + t for p, t in zip(points, texcoords)], np.float32)
+        m.faces = np.array(faces, np.uint32)
+        texture = glutils.load_texture('ressources/textures/blue_square.png')
+        super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
+        #self.wireframe = True
 
 
-class Cube(Obstacles):
+class Cube(Object3D):
     def __init__(self, x, y, z):
-        pass
+        m = Mesh.load_obj('ressources/meshes/cube.obj')
+        m.normalize()
+        
+        m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 0.5, 0.5, 1]))
+        
+        transformation = Transformation3D()
+        transformation.translation = pyrr.Vector3([x,y,z])
+        transformation.offset = pyrr.Vector3([0.5,0.5,0.5])
+        
+        texture = glutils.load_texture('ressources/textures/blue_square.png')
 
+        super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
+        
+        """
+        points  = [ [0, 0, 0],  [1, 0, 0],  [0, 1, 0],   [0, 0, 1], 
+                    [0, 1, 1],  [1, 0, 1],  [1, 1, 0],   [1, 1, 1] ]
+        
+        texcoords = [   [0, 0],     [0, 1],       [1, 1],       [1, 0],
+                        [0, 0],     [0, 1],       [1, 1],       [1, 0]  ]
+        
+        normals = [ [0, 0, 0],  [1, 0, 0],  [0, 1, 0],   [0, 0, 1], 
+                    [0, 1, 1],  [1, 0, 1],  [1, 1, 0],   [1, 1, 1] ]
+        
+        faces = [   [1,2,5], [1,3,5],
+                    [2,6,8], [2,5,8],
+                    [6,4,7], [6,8,7],
+                    [4,7,3], [4,1,3],
+                    [2,6,4], [2,1,4],
+                    [3,5,8], [3,7,8]  ]
+        
+        transformation = Transformation3D()
+        transformation.translation = pyrr.Vector3([x,y,z])
 
-
-
-if __name__ == "__main__":
-    test = Level()
-    test.load()
+        m = Mesh()
+        m.vertices = np.array([p + n + c + t for p, n, t in zip(points, normals, texcoords)], np.float32)
+        m.faces = np.array(faces, np.uint32)
+        super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
+        """
+        
+        
