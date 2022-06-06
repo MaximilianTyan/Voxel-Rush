@@ -14,10 +14,11 @@ class Wall(Object3D):
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, Transformation3D())
     
 class Background():
-    def __init__(self):
+    def __init__(self, camera):
         # points  = [[-25, 0, -25],    [25, 0, -25],   [25, 0, 25],    [-25, 0, 25]]
         # texcoords = [[0, 0],           [1, 0],         [1, 1],         [0, 1]]
         self.wall_list = []
+        self.cam = camera
         
         texture = glutils.load_texture('ressources/textures/background.png')
         points  = [[-5, 0, 0],    [-5, 5, 0],   [5, 5, 0],    [5, 0, 0]]

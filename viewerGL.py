@@ -21,7 +21,7 @@ class ViewerGL:
         glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
         # création et paramétrage de la fenêtre
         glfw.window_hint(glfw.RESIZABLE, False)
-        self.window = glfw.create_window(800, 800, 'OpenGL', None, None)
+        self.window = glfw.create_window(1600, 900, 'OpenGL', None, None)
         # paramétrage de la fonction de gestion des évènements
         glfw.set_key_callback(self.window, self.key_callback)
         # activation du context OpenGL pour la fenêtre
@@ -34,11 +34,18 @@ class ViewerGL:
         print(f"OpenGL: {GL.glGetString(GL.GL_VERSION).decode('ascii')}")
 
         self.prevtime = 0
+        self.background = []
         self.clocked_objs= []
         self.objs = reflist()
         self.touch = {}
 
     def run(self):
+        print(self.cam)
+        print(self.background)
+        
+        print(self.objs)
+        print(self.clocked_objs)
+        
         # boucle d'affichage
         while not glfw.window_should_close(self.window):
             # nettoyage de la fenêtre : fond et profondeur
@@ -52,15 +59,26 @@ class ViewerGL:
             
             for obj in self.clocked_objs:
                 obj.tick_clock(dt, crt_time)
-
+            
+            # Camera follow player
+            cam_offset = 3
+            cam_center = self.objs['player'].transformation.translation.x + cam_offset
+            self.cam.transformation.translation.x = cam_center
+            self.cam.transformation.rotation_center.x = cam_center
+            
+            # Background follows camera
+            for wall in self.background:
+                wall.transformation.translation.x = self.cam.transformation.translation.x
+            
             for obj in self.objs:
-                if obj.program is None: 
-                    raise Exception(f"Le programme de rendu n'a pas été précisé : {obj.program} at {obj}")
-                GL.glUseProgram(obj.program)
-                
-                if isinstance(obj, Object3D):
-                    self.update_camera(obj.program)
-                obj.draw()
+                if obj.visible:
+                    if obj.program is None: 
+                        raise Exception(f"Le programme de rendu n'a pas été précisé : {obj.program} at {obj}")
+                    GL.glUseProgram(obj.program)
+                    
+                    if isinstance(obj, Object3D):
+                        self.update_camera(obj.program)
+                    obj.draw()
 
             # changement de buffer d'affichage pour éviter un effet de scintillement
             glfw.swap_buffers(self.window)
@@ -85,6 +103,13 @@ class ViewerGL:
     
     def add_clocked_object(self, obj):
         self.clocked_objs.append(obj)
+    
+    def set_background(self, obj):
+        if isinstance(obj, list) or isinstance(obj, tuple):
+            for o in obj:
+                self.background.append(o)
+        else:
+            self.background.append(obj)
 
     def set_camera(self, cam):
         self.cam = cam
@@ -135,6 +160,10 @@ class ViewerGL:
         
         if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
             self.objs['player'].jump()
+        if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
+            self.objs['player'].step()
+            
+            
         
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().roll] -= 0.1
@@ -144,6 +173,10 @@ class ViewerGL:
             self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] -= 0.1
         if glfw.KEY_L in self.touch and self.touch[glfw.KEY_L] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += 0.1
+        
+        
+        
+        
         
         
 """

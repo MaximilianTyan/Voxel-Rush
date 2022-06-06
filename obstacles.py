@@ -9,19 +9,24 @@ import pyrr
 class Spike(Object3D):
     def __init__(self, x, y, z, orientation='UP'):
         
+        m = Mesh()
+        texture = glutils.load_texture('ressources/textures/blue_square.png')
         
         points  = [ [0, 0, 0],  [1, 0, 0],  [0, 0, 1],     [1, 0, 1],      [0.5, 1, 0.5]]
-        #normals = [ [0, 0, 1],  [0, 0, 1],  [0, 0, 1],     [0, 0, 1],      [0, 0, 1]]
+        texcoords = [[0, 0],     [0, 1],       [0, 1],       [1, 1],            [0.5, 0.5]]
+        
+        n = [0,0,1]
+        c = [1,1,1]
+        
+        m.vertices = np.array([p + n + c + t for p, t in zip(points, texcoords)], np.float32)
+        
         faces = [   [0,1,3],
                     [0,2,3], 
                     [0,4,2],
                     [2,4,3], 
                     [3,4,1],
                     [1,4,0] ]
-        texcoords = [[0, 0],     [0, 1],       [0, 1],       [1, 1],            [0.5, 0.5]]
-        n = [0,0,1]
-        c = [1,1,1]
-        
+        m.faces = np.array(faces, np.uint32)
         
         transformation = Transformation3D()
         transformation.translation = pyrr.Vector3([x, y, z])
@@ -31,16 +36,14 @@ class Spike(Object3D):
         if orientation == 'UP':
             transformation.rotation_euler[pyrr.euler.index().pitch] = 0
         elif orientation == 'LEFT':
-            transformation.rotation_euler[pyrr.euler.index().pitch] =  np.pi / 2
+            transformation.rotation_euler[pyrr.euler.index().pitch] = -np.pi / 2
         elif orientation == 'DOWN':
-            transformation.rotation_euler[pyrr.euler.index().pitch] =  np.pi
+            transformation.rotation_euler[pyrr.euler.index().pitch] = np.pi
         else:
             raise LevelError(f"Spike orientation not supported: {orientation}")
         
-        m = Mesh()
-        m.vertices = np.array([p + n + c + t for p, t in zip(points, texcoords)], np.float32)
-        m.faces = np.array(faces, np.uint32)
-        texture = glutils.load_texture('ressources/textures/blue_square.png')
+        self.bounding_box =  (pyrr.Vector3([0.01, 0.01, 0.01]),  pyrr.Vector3([0.99, 0.99, 0.99]))
+        
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
         #self.wireframe = True
 
@@ -54,10 +57,12 @@ class Cube(Object3D):
         
         transformation = Transformation3D()
         transformation.translation = pyrr.Vector3([x,y,z])
-        transformation.offset = pyrr.Vector3([0.5,0.5,0.5])
+        transformation.offset = pyrr.Vector3([0.5, 0.5, 0.5])
         
         texture = glutils.load_texture('ressources/textures/blue_square.png')
-
+        
+        self.bounding_box =  (pyrr.Vector3([0, 0, 0]),  pyrr.Vector3([1, 1, 1]))
+        
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
         
         """

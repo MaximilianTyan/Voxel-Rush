@@ -24,19 +24,21 @@ def main():
     Text.set_program(programGUI_id)
     
     player = Player()
+    #player.wireframe = True
     viewer.add_ref_object('player', player)
     viewer.add_clocked_object(player)
     
-    bkg = Background()
+    bkg = Background(camera)
     viewer.add_object(bkg.get_walls())
-
-    level = Level(camera, level="test")
-    viewer.add_clocked_object(player)
-    level.load()
-    viewer.add_object(level.get_objects())
+    viewer.set_background(bkg.get_walls())
     
-    from obstacles import Spike
-    viewer.add_object(Spike(0,0,0))
+    level = Level(camera, level='test')
+    viewer.add_clocked_object(level)
+    level.load()
+    
+    player.set_terrain(level)
+    
+    viewer.add_object(level.obstacles)
 
     # for obj in viewer.objs:
     #     print(type(obj), obj.get_coords())
@@ -46,7 +48,7 @@ def main():
 
 
 
-def load_reference(viewer):
+def show_axis(viewer):
     m = Mesh()
     p0, p1, p2, p3 = [0, 0, 0], [5, 0, 0], [0, 5, 0], [0, 0, 5]
     n = [0, 1, 0]

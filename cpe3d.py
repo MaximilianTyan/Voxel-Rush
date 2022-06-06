@@ -17,6 +17,9 @@ class Object:
         self.texture = texture
         self.visible = True
         self.wireframe = False
+    
+    def __repr__(self):
+        return str(type(self))[8:-2]
 
     def draw(self):
         if self.visible:
@@ -41,10 +44,51 @@ class Object3D(Object):
     def set_program(cls, program):
         cls.program = program
     
+    def get_aabb_points(self):
+        minpt, maxpt = self.bounding_box
+        minpt = minpt + self.transformation.translation
+        maxpt = maxpt + self.transformation.translation
+        
+        delta = maxpt - minpt
+
+        pmin1 = minpt + delta * [1, 0, 0]
+        pmin2 = minpt + delta * [0, 1, 0]
+        pmin3 = minpt + delta * [0, 0, 1]
+        
+        pmax1 = maxpt - delta * [1, 0, 0]
+        pmax2 = maxpt - delta * [0, 1, 0]
+        pmax3 = maxpt - delta * [0, 0, 1]
+
+        return minpt,  pmin1, pmin2, pmin3, pmax1, pmax2, pmax3, maxpt
+    
+    def get_aabb_faces_center(self):
+        minpt, maxpt = self.bounding_box
+        delta = maxpt - minpt
+        center = self.get_coords() + self.transformation.offset
+        
+        half_dx = delta * [1, 0, 0] / 2
+        negx = center - half_dx
+        posx = center + half_dx
+        
+        half_dy = delta * [0, 1, 0] / 2
+        negy = center - half_dy
+        posy = center + half_dy
+        
+        half_dz = delta * [0, 0, 1] / 2
+        negz = center - half_dz
+        posz = center + half_dz
+
+        return negx, posx, negy, posy, negz, posz
+        
+    
     def get_coords(self):
-        return self.transformation.translation.x, self.transformation.translation.y, self.transformation.translation.z
+        return self.transformation.translation.xyz
     
     def draw(self):
+        
+        if not self.visible:
+            return
+        
         if Object3D.program is None: 
             raise Exception("Le programme de rendu n'a pas été précisé")
         GL.glUseProgram(Object3D.program)
@@ -88,11 +132,10 @@ class Camera:
     def __init__(self, transformation = Transformation3D(translation=pyrr.Vector3([0, 1, 0], dtype='float32')), projection=None):
         self.transformation = transformation
         if projection is None:
-            self.ratio = 1  #(width / height)
+            self.ratio = 1.778  #(width / height)
             self.fovy = 60  #degrees
             self.fovx = self.fovy * self.ratio
             self.projection = pyrr.matrix44.create_perspective_projection(self.fovy, self.ratio, 0.01, 100)
-            
 
 class Text(Object):
     def __init__(self, value, bottomLeft, topRight, vao, nb_triangle, texture):
