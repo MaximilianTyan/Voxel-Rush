@@ -9,9 +9,9 @@ import pyrr
 class Spike(Object3D):
     def __init__(self, x, y, z, orientation='UP'):
         
+        texture = glutils.load_texture('ressources/textures/red.png')
+        """
         m = Mesh()
-        texture = glutils.load_texture('ressources/textures/blue_square.png')
-        
         points  = [ [0, 0, 0],  [1, 0, 0],  [0, 0, 1],     [1, 0, 1],      [0.5, 1, 0.5]]
         texcoords = [[0, 0],     [0, 1],       [0, 1],       [1, 1],            [0.5, 0.5]]
         
@@ -27,18 +27,24 @@ class Spike(Object3D):
                     [3,4,1],
                     [1,4,0] ]
         m.faces = np.array(faces, np.uint32)
+        """
+        
+        m = Mesh.load_obj('ressources/meshes/spike.obj')
+        m.normalize()
+        m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 0.5, 0.5, 1]))
         
         transformation = Transformation3D()
         transformation.translation = pyrr.Vector3([x, y, z])
+        transformation.offset = pyrr.Vector3([0.5, 0.5, 0.5])
         
-        transformation.rotation_center = pyrr.Vector3([0.5, 0.5, 0.5])
+        transformation.rotation_euler[pyrr.euler.index().roll] = -np.pi / 2
         
         if orientation == 'UP':
-            transformation.rotation_euler[pyrr.euler.index().pitch] = 0
+            transformation.rotation_euler[pyrr.euler.index().yaw] = 0
         elif orientation == 'LEFT':
-            transformation.rotation_euler[pyrr.euler.index().pitch] = -np.pi / 2
+            transformation.rotation_euler[pyrr.euler.index().yaw] = -np.pi / 2
         elif orientation == 'DOWN':
-            transformation.rotation_euler[pyrr.euler.index().pitch] = np.pi
+            transformation.rotation_euler[pyrr.euler.index().yaw] = np.pi
         else:
             raise LevelError(f"Spike orientation not supported: {orientation}")
         
@@ -91,4 +97,23 @@ class Cube(Object3D):
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
         """
         
+class Jump(Object3D):
+    def __init__(self, x, y, z):
+        m = Mesh.load_obj('ressources/meshes/diamond.obj')
+        m.normalize()
         
+        m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 0.5, 0.5, 1]))
+        
+        transformation = Transformation3D()
+        transformation.translation = pyrr.Vector3([x,y,z])
+        
+        texture = glutils.load_texture('ressources/textures/sun.png')
+        
+        minpt, maxpt = pyrr.aabb.create_from_points()
+        print(minpt, maxpt)
+        minpt, maxpt = np.amin(m.vertices, axis=0), np.amax(m.vertices, axis=0)
+        print(minpt, maxpt)
+
+        self.bounding_box =  (pyrr.Vector3(),  pyrr.Vector3())
+        
+        super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)

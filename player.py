@@ -74,8 +74,8 @@ class Player(Object3D):
     def test_collisions(self):
         px, py = self.transformation.translation.xy
         #print(px, py)
-        print('Near', self.terrain.get_relevant_aabb(px, py))
-        #print(obj.get_aabb_points())
+        #print('Near', self.terrain.get_relevant_aabb(px, py))
+        #print(self.get_aabb_points())
         
         points_touched = []
         for obj in self.terrain.get_relevant_aabb(px, py):
@@ -83,7 +83,7 @@ class Player(Object3D):
             minpt = minpt + obj.transformation.translation
             maxpt = maxpt + obj.transformation.translation
             
-            print('OBJ:', obj, obj.transformation.translation, minpt, maxpt)
+            #print('OBJ:', obj, obj.transformation.translation, minpt, maxpt)
             #  minpt,  pmin1, pmin2, pmin3, pmax1, pmax2, pmax3, maxpt
             for i, point in enumerate(self.get_aabb_points()):
                 if minpt.x <= point.x <= maxpt.x and minpt.y <= point.y <= maxpt.y and minpt.z <= point.z <= maxpt.z:
@@ -93,7 +93,7 @@ class Player(Object3D):
                         self.death()
                         return
             
-            print('points', points_touched)
+            #print('points', points_touched)
             
             if (7 in points_touched) or (6 in points_touched) or (4 in points_touched) or (2 in points_touched):
                 self.death()
