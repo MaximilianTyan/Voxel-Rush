@@ -1,6 +1,6 @@
 #coding:utf-8
 import math
-from obstacles import Spike, Cube
+from obstacles import Spike, Cube, Jump
 
 class LevelError(Exception):
     def __init__(self, *args) -> None:
@@ -68,6 +68,8 @@ class Level():
                     obj = Spike(x, y, 0, 'DOWN')
                 elif element == '<':
                     obj = Spike(x, y, 0, 'LEFT')
+                elif element == 'J':
+                    obj = Jump(x,y, 0)
                 else:
                     raise LevelError(f"Unsupported element:'{element}'")
                 #print(x,y, element, j, i)

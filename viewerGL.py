@@ -75,10 +75,13 @@ class ViewerGL:
                     if obj.program is None: 
                         raise Exception(f"Le programme de rendu n'a pas été précisé : {obj.program} at {obj}")
                     GL.glUseProgram(obj.program)
-                    
+
                     if isinstance(obj, Object3D):
                         self.update_camera(obj.program)
                     obj.draw()
+
+                    if obj.hitboxvisible:
+                        self.draw_box(obj.get_aabb_points())
 
             # changement de buffer d'affichage pour éviter un effet de scintillement
             glfw.swap_buffers(self.window)
@@ -113,6 +116,18 @@ class ViewerGL:
 
     def set_camera(self, cam):
         self.cam = cam
+    
+    def draw_box(self, points):
+        minpt,  pmin1, pmin2, pmin3, pmax1, pmax2, pmax3, maxpt = points
+        for pt in (points[1], points[2], points[3]):
+            self.draw_line(points[0], pt)
+        for pt in (points[-4], points[-3], points[-2]):
+            self.draw_line(points[-1], pt)
+
+    def draw_line(self, pt1, pt2, color=(0, 0, 0)):
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        GL.glDrawElements(GL.GL_LINES, 2, GL.GL_UNSIGNED_INT, None)
+
     
 
     def update_camera(self, prog):
@@ -162,7 +177,9 @@ class ViewerGL:
             self.objs['player'].jump()
         if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
             self.objs['player'].step()
-            
+        
+        if glfw.KEY_R in self.touch and self.touch[glfw.KEY_R] > 0:
+            self.objs['player'].death()
             
         
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:

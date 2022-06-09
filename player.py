@@ -5,7 +5,7 @@ from cpe3d import Object3D, Transformation3D, Text
 import numpy as np
 import OpenGL.GL as GL
 import pyrr, time
-from obstacles import Spike, Cube
+from obstacles import Spike, Cube, Jump
 
 class Player(Object3D):
     def __init__(self):
@@ -19,7 +19,7 @@ class Player(Object3D):
         
         texture = glutils.load_texture('ressources/textures/eliacube.png')
         
-        self.bounding_box = (pyrr.Vector3([0.01, 0.01, 0.01]),  pyrr.Vector3([0.99, 0.99, 0.99]))
+        self.bounding_box = (pyrr.Vector3([0, 0, 0]),  pyrr.Vector3([1, 0.99, 1]))
         
         transformation.translation = pyrr.Vector3([0, 0, 0])
         self.velocity = pyrr.Vector3([0, 0, 0])
@@ -39,19 +39,21 @@ class Player(Object3D):
         if self.onground:
             self.transformation.rotation_euler[pyrr.euler.index().pitch] = 0
         else:
-            self.transformation.rotation_euler[pyrr.euler.index().pitch] += 0.15
+            self.transformation.rotation_euler[pyrr.euler.index().pitch] += 5 * dt
         
         self.velocity = self.velocity + dt * self.acceleration 
         if self.onground:
             self.velocity.y = 0
         
         self.transformation.translation = self.transformation.translation + dt * self.velocity
+
+        self.test_collisions()
+
         if self.transformation.translation.y < 0:
             #print('Ground contact')
             self.transformation.translation.y = 0
+            self.transformation.rotation_euler[pyrr.euler.index().pitch] = 0
             self.onground = True
-        
-        self.test_collisions()
 
     def death(self):
         print('You died')
@@ -71,14 +73,22 @@ class Player(Object3D):
             self.onground = False
             print('JUMPED')
     
+    def longjump(self):
+        self.velocity.y = 25
+        self.onground = False
+        print('LONG JUMPED')
+    
     def test_collisions(self):
         px, py = self.transformation.translation.xy
         #print(px, py)
         #print('Near', self.terrain.get_relevant_aabb(px, py))
         #print(self.get_aabb_points())
         
-        points_touched = []
+        points_touched = {}
         for obj in self.terrain.get_relevant_aabb(px, py):
+
+            points_touched[type(obj)] = []
+
             minpt, maxpt = obj.bounding_box
             minpt = minpt + obj.transformation.translation
             maxpt = maxpt + obj.transformation.translation
@@ -87,25 +97,29 @@ class Player(Object3D):
             #  minpt,  pmin1, pmin2, pmin3, pmax1, pmax2, pmax3, maxpt
             for i, point in enumerate(self.get_aabb_points()):
                 if minpt.x <= point.x <= maxpt.x and minpt.y <= point.y <= maxpt.y and minpt.z <= point.z <= maxpt.z:
-                    points_touched.append(i)
-                    
-                    if isinstance(obj, Spike):
-                        self.death()
-                        return
+                    points_touched[type(obj)].append(i)
             
             #print('points', points_touched)
+        
+        if len(points_touched) == 0:
+            self.onground = False
+
+        elif Jump in points_touched.keys():
+            self.longjump()
             
-            if (7 in points_touched) or (6 in points_touched) or (4 in points_touched) or (2 in points_touched):
+        elif Cube in points_touched.keys():
+            points = points_touched[Cube]
+            if (7 in points) or (6 in points) or (4 in points) or (2 in points):
                 self.death()
-                
-            elif (1 in points_touched) or (5 in points_touched) or (3 in points_touched) or (0 in points_touched):
-                #print('Bottom contact')
+            elif (1 in points) or (5 in points) or (3 in points) or (0 in points):
                 self.onground = True
-                self.transformation.translation.y = maxpt.y - 0.01
-            else:
-                #print('Falling')
-                self.onground = False
+                self.transformation.translation.y = maxpt.y
+
+        elif Spike in points_touched.keys():
+            self.death()
+
             
+
             
 
             

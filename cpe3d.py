@@ -17,6 +17,7 @@ class Object:
         self.texture = texture
         self.visible = True
         self.wireframe = False
+        self.hitboxvisible = False
     
     def __repr__(self):
         return str(type(self))[8:-2]
@@ -80,9 +81,9 @@ class Object3D(Object):
 
         return negx, posx, negy, posy, negz, posz
         
-    
     def get_coords(self):
         return self.transformation.translation.xyz
+
     
     def draw(self):
         
