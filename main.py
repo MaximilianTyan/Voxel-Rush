@@ -3,8 +3,8 @@ import glutils
 from mesh import Mesh
 from cpe3d import Object3D, Camera, Transformation3D, Text
 import numpy as np
-import OpenGL.GL as GL
-import pyrr
+#import OpenGL.GL as GL
+#import pyrr
 from player import Player
 from background import Background
 from level import Level
@@ -32,7 +32,7 @@ def main():
     viewer.add_object(bkg.get_walls())
     viewer.set_background(bkg.get_walls())
     
-    level = Level(camera, level='test')
+    level = Level(camera, level='0')
     viewer.add_clocked_object(level)
     level.load()
     

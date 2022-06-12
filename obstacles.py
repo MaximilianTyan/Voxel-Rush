@@ -48,10 +48,11 @@ class Spike(Object3D):
         else:
             raise LevelError(f"Spike orientation not supported: {orientation}")
         
-        self.bounding_box =  (pyrr.Vector3([0.01, 0.01, 0.01]),  pyrr.Vector3([0.99, 0.99, 0.99]))
-        
+        self.bounding_box =  (pyrr.Vector3([0, 0, 0]),  pyrr.Vector3([1, 0.9, 1]))
+
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
         #self.wireframe = True
+        self.hitboxvisible = True
 
 
 class Cube(Object3D):
@@ -102,18 +103,15 @@ class Jump(Object3D):
         m = Mesh.load_obj('ressources/meshes/diamond.obj')
         m.normalize()
         
-        m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 0.5, 0.5, 1]))
+        m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 1, 0.5, 1]))
         
         transformation = Transformation3D()
         transformation.translation = pyrr.Vector3([x,y,z])
+        transformation.offset = pyrr.Vector3([0.5, 0, 0.5])
         
         texture = glutils.load_texture('ressources/textures/sun.png')
-        
-        minpt, maxpt = pyrr.aabb.create_from_points()
-        print(minpt, maxpt)
-        minpt, maxpt = np.amin(m.vertices, axis=0), np.amax(m.vertices, axis=0)
-        print(minpt, maxpt)
 
-        self.bounding_box =  (pyrr.Vector3(),  pyrr.Vector3())
+        self.bounding_box = (pyrr.Vector3([0.3,0,0.3]),  pyrr.Vector3([0.7,0.1,0.7]))
         
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
+        self.hitboxvisible = True
