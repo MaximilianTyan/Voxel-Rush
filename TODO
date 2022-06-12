@@ -1,0 +1,8 @@
+Physics:
+- Fix collisions with spikes
+- Augment speed (needs to jump across 3 spikes barely)
+
+Menu:
+- Pause menu
+- Level select
+

@@ -138,15 +138,19 @@ class Camera:
             self.projection = pyrr.matrix44.create_perspective_projection(self.fovy, self.ratio, 0.01, 100)
 
 class Text(Object):
-    def __init__(self, value, bottomLeft, topRight, vao, nb_triangle, texture):
+    def __init__(self, value, bottomLeft, topRight, vao, nb_triangle):
         self.value = value
         self.bottomLeft = bottomLeft
         self.topRight = topRight
-        super().__init__(vao, nb_triangle, type(self).program, texture)
+        super().__init__(vao, nb_triangle, type(self).program, None)
 
     @classmethod
     def set_program(cls, program):
         cls.program = program
+    
+    @classmethod
+    def set_font(cls, font):
+        cls.font = font
 
     def draw(self):
         if Text.program is None: 
@@ -160,7 +164,7 @@ class Text(Object):
             print("Pas de variable uniforme : size")
         GL.glUniform2f(loc, size[0], size[1])
         GL.glBindVertexArray(self.vao)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, Text.font)
         for idx, c in enumerate(self.value):
             loc = GL.glGetUniformLocation(self.program, "start")
             if (loc == -1) :

@@ -44,6 +44,15 @@ def main():
     #     print(type(obj), obj.get_coords())
         
     #load_reference(viewer)
+    Text.set_font(glutils.load_texture('ressources/textures/fontB.jpg'))
+    vao = Text.initalize_geometry()
+    o = Text('Voxel', np.array([-0.8, 0.3], np.float32), np.array([0.8, 0.8], np.float32), vao, 2)
+    viewer.add_object(o)
+    o = Text('RUSH', np.array([-0.5, -0.2], np.float32), np.array([0.5, 0.3], np.float32), vao, 2)
+    viewer.add_object(o)
+    
+    
+    
     viewer.run()
 
 

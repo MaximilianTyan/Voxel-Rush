@@ -39,7 +39,7 @@ class Player(Object3D):
         if self.onground:
             self.transformation.rotation_euler[pyrr.euler.index().pitch] = 0
         else:
-            self.transformation.rotation_euler[pyrr.euler.index().pitch] += 0.15
+            self.transformation.rotation_euler[pyrr.euler.index().pitch] += dt * 4
         
         self.velocity = self.velocity + dt * self.acceleration 
         if self.onground:
