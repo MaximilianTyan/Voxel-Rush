@@ -40,8 +40,12 @@ def main():
     bkg = Background(camera)
     viewer.set_background(bkg.get_walls())
     
+    # ===================================================
+    level_choice = 'test'
+    # ===================================================
+    
     Level.init()
-    level = Level(camera, level='test')
+    level = Level(camera, level=level_choice)
     viewer.add_clocked_object(level)
     level.load()
     
@@ -67,7 +71,7 @@ def main():
     
     press_label = Text('Press SPACE to start', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
     press_label.set_font('red')
-    viewer.add_object('title',press_label)
+    viewer.add_object('title', press_label)
     
     #show_axis(viewer)
     

@@ -63,11 +63,11 @@ class ViewerGL:
             
             # Camera follow player
             player_pos = self.objs['common']['player'].transformation.translation.xyz
-            cam_offset = pyrr.Vector3([3,-5,10])
-            #if player_pos.y - self.cam.transformation.translation > :
-            #    cam_offset.y = 3
-            
-            cam_center = player_pos + cam_offset
+            cam_offset = pyrr.Vector3([3,3,10])
+            if abs(player_pos.y - self.cam.transformation.translation.y) < 3:
+                cam_center = [1, 0, 1] * player_pos + cam_offset
+            else:
+                cam_center = player_pos + cam_offset
             
             self.cam.transformation.translation = cam_center
             self.cam.transformation.rotation_center = cam_center
