@@ -182,12 +182,55 @@ class ViewerGL:
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
                 glfw.set_window_should_close(self.window, glfw.TRUE)
             if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
+                self.switch[0] = 'level_select_0'
+
+        elif self.switch[0] == 'level_select_0':
+            self.level=0
+            if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
+                self.switch[0] = 'title'
+            if glfw.KEY_RIGHT in self.touch and self.touch[glfw.KEY_RIGHT] > 0:
+                del self.touch[glfw.KEY_RIGHT]
+                self.level=1
+                self.switch[0] = 'level_select_1'
+            if glfw.KEY_ENTER in self.touch and self.touch[glfw.KEY_ENTER] > 0:
                 print('='*20 + 'Started level' + '='*20)
                 #self.objs['common']['player'].step_start()
                 self.switch[0] = 'level'
                 glfw.set_time(0)
                 #self.objs['common']['player'].death()
-        
+
+        elif self.switch[0] == 'level_select_1':
+            if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
+                self.switch[0] = 'title'
+            if glfw.KEY_LEFT in self.touch and self.touch[glfw.KEY_LEFT] > 0:
+                del self.touch[glfw.KEY_LEFT]
+                self.level=0
+                self.switch[0] = 'level_select_0'
+            if glfw.KEY_RIGHT in self.touch and self.touch[glfw.KEY_RIGHT] > 0:
+                del self.touch[glfw.KEY_RIGHT]
+                self.level=2
+                self.switch[0] = 'level_select_2'
+            if glfw.KEY_ENTER in self.touch and self.touch[glfw.KEY_ENTER] > 0:
+                print('='*20 + 'Started level' + '='*20)
+                #self.objs['common']['player'].step_start()
+                self.switch[0] = 'level'
+                glfw.set_time(0)
+                #self.objs['common']['player'].death()
+
+        elif self.switch[0] == 'level_select_2':
+            if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
+                self.switch[0] = 'title'
+            if glfw.KEY_LEFT in self.touch and self.touch[glfw.KEY_LEFT] > 0:
+                del self.touch[glfw.KEY_LEFT]
+                self.level=1
+                self.switch[0] = 'level_select_1'
+            if glfw.KEY_ENTER in self.touch and self.touch[glfw.KEY_ENTER] > 0:
+                print('='*20 + 'Started level' + '='*20)
+                #self.objs['common']['player'].step_start()
+                self.switch[0] = 'level'
+                glfw.set_time(0)
+                #self.objs['common']['player'].death()
+
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().roll] -= 0.1
         if glfw.KEY_K in self.touch and self.touch[glfw.KEY_K] > 0:
