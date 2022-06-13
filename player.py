@@ -8,7 +8,10 @@ import pyrr, time
 from obstacles import Spike, Cube, Jump
 
 class Player(Object3D):
-    def __init__(self):
+    def __init__(self, switch):
+        
+        self.switch = switch
+        
         m = Mesh.load_obj('ressources/meshes/cube.obj')
         m.normalize()
         
@@ -22,15 +25,16 @@ class Player(Object3D):
         self.bounding_box = (pyrr.Vector3([0, 0, 0]),  pyrr.Vector3([1, 0.99, 1]))
         
         transformation.translation = pyrr.Vector3([0, 0, 0])
-        self.velocity = pyrr.Vector3([0, 0, 0])
+        self.velocity = pyrr.Vector3([7, 0, 0])
         self.acceleration = pyrr.Vector3([0, -50, 0])
         
         self.onground = True
         self.moveforward = False
         self.another_chance = False
         self.prevtime = 0
+        
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
-    
+        
     def set_terrain(self, terrain):
         self.terrain = terrain
     
@@ -41,12 +45,15 @@ class Player(Object3D):
         else:
             self.transformation.rotation_euler[pyrr.euler.index().pitch] += dt * 4
         
+        print('accleration',self.acceleration)
         self.velocity = self.velocity + dt * self.acceleration 
         if self.onground:
             self.velocity.y = 0
         
+        print('velocity', self.velocity)
         self.transformation.translation = self.transformation.translation + dt * self.velocity
-
+        
+        print('position', self.transformation.translation)
         self.test_collisions()
 
         if self.transformation.translation.y < 0:
@@ -58,10 +65,10 @@ class Player(Object3D):
     def death(self):
         print('You died')
         self.transformation.translation = pyrr.Vector3([0, 0, 0])
-        self.velocity = pyrr.Vector3([0, 0, 0])
+        self.velocity = pyrr.Vector3([7, 0, 0])
         self.onground = True
     
-    def step(self):
+    def step_start(self):
         self.velocity.x = 7
         
         #print(self.transformation.translation, self.velocity, self.acceleration, self.transformation.offset, t, time.time())

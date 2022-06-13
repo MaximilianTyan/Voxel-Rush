@@ -11,7 +11,10 @@ from cpe3d import Object3D
 from reflist import reflist
 
 class ViewerGL:
-    def __init__(self):
+    def __init__(self, switch):
+        
+        self.switch = switch
+        
         # initialisation de la librairie GLFW
         glfw.init()
         # paramétrage du context OpenGL
@@ -36,15 +39,15 @@ class ViewerGL:
         self.prevtime = 0
         self.background = []
         self.clocked_objs= []
-        self.objs = reflist()
+        self.objs = {'common':reflist()}
         self.touch = {}
 
     def run(self):
-        print(self.cam)
-        print(self.background)
+        print('camera:', self.cam)
+        print('background:', self.background)
         
-        print(self.objs)
-        print(self.clocked_objs)
+        print('objs:', self.objs)
+        print('clocked:', self.clocked_objs)
         
         # boucle d'affichage
         while not glfw.window_should_close(self.window):
@@ -53,24 +56,28 @@ class ViewerGL:
 
             self.update_key()
             
-            crt_time = time.time()
-            dt = crt_time - self.prevtime
-            self.prevtime = crt_time
+            if self.switch[0] == 'level':
+                crt_time = time.time()
+                dt = crt_time - self.prevtime
+                self.prevtime = crt_time
+                
+                for obj in self.clocked_objs:
+                    obj.tick_clock(dt, crt_time)
             
-            for obj in self.clocked_objs:
-                obj.tick_clock(dt, crt_time)
+            print(self.objs['common']['player'].transformation.translation)
             
             # Camera follow player
-            cam_offset = 3
-            cam_center = self.objs['player'].transformation.translation.x + cam_offset
-            self.cam.transformation.translation.x = cam_center
-            self.cam.transformation.rotation_center.x = cam_center
+            cam_offset = pyrr.Vector3([3,0,0])
+            cam_center = self.objs['common']['player'].transformation.translation + cam_offset
+            self.cam.transformation.translation = cam_center
+            self.cam.transformation.rotation_center = cam_center
             
             # Background follows camera
             for wall in self.background:
                 wall.transformation.translation.x = self.cam.transformation.translation.x
             
-            for obj in self.objs:
+            #print(self.objs['common']['player'].transformation.translation.xyz)
+            for obj in self.background + self.objs[self.switch[0]] + self.objs['common']:
                 if obj.visible:
                     if obj.program is None: 
                         raise Exception(f"Le programme de rendu n'a pas été précisé : {obj.program} at {obj}")
@@ -90,19 +97,20 @@ class ViewerGL:
         
     def key_callback(self, win, key, scancode, action, mods):
         # sortie du programme si appui sur la touche 'échappement'
-        if key == glfw.KEY_ESCAPE and action == glfw.PRESS:
-            glfw.set_window_should_close(win, glfw.TRUE)
+        self.window = win
         self.touch[key] = action
     
-    def add_object(self, obj):
+    def add_object(self, category, obj):
+        if category not in self.objs.keys():
+            self.objs[category] = []
         if isinstance(obj, list) or isinstance(obj, tuple):
             for o in obj:
-                self.objs.append(o)
+                self.objs[category].append(o)
         else:
-            self.objs.append(obj)
+            self.objs[category].append(obj)
     
     def add_ref_object(self, ref, obj):
-        self.objs.refappend(ref, obj)
+        self.objs['common'].refappend(ref, obj)
     
     def add_clocked_object(self, obj):
         self.clocked_objs.append(obj)
@@ -127,8 +135,6 @@ class ViewerGL:
     def draw_line(self, pt1, pt2, color=(0, 0, 0)):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
         GL.glDrawElements(GL.GL_LINES, 2, GL.GL_UNSIGNED_INT, None)
-
-    
 
     def update_camera(self, prog):
         GL.glUseProgram(prog)
@@ -173,14 +179,25 @@ class ViewerGL:
 
     def update_key(self):
         
-        if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
-            self.objs['player'].jump()
-        if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
-            self.objs['player'].step()
-        
-        if glfw.KEY_R in self.touch and self.touch[glfw.KEY_R] > 0:
-            self.objs['player'].death()
+        if self.switch[0] == 'level':
+            if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
+                self.objs['common']['player'].jump()
+            if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
+                self.objs['common']['player'].step_start()
             
+            if glfw.KEY_R in self.touch and self.touch[glfw.KEY_R] > 0:
+                self.objs['common']['player'].death()
+                
+            if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
+                self.switch[0] = 'title'
+        
+        elif self.switch[0] == 'title':
+            if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
+                glfw.set_window_should_close(self.window, glfw.TRUE)
+            if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
+                #self.objs['common']['player'].step_start()
+                self.switch[0] = 'level'
+                self.objs['common']['player'].death()
         
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().roll] -= 0.1

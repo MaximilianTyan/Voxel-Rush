@@ -25,6 +25,7 @@ class Level():
         return relevant_aabb
 
     def load(self):
+        print("Loading level {}...".format(self.file))
         with open(self.file) as file:
             map = file.readlines()
 

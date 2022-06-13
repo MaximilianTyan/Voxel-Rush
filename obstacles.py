@@ -52,7 +52,7 @@ class Spike(Object3D):
 
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
         #self.wireframe = True
-        self.hitboxvisible = True
+        self.hitboxvisible = False
 
 
 class Cube(Object3D):
@@ -114,4 +114,4 @@ class Jump(Object3D):
         self.bounding_box = (pyrr.Vector3([0.3,0,0.3]),  pyrr.Vector3([0.7,0.1,0.7]))
         
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
-        self.hitboxvisible = True
+        self.hitboxvisible = False

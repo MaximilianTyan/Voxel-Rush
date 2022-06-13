@@ -1,6 +1,7 @@
 import OpenGL.GL as GL
 import pyrr
 import numpy as np 
+import glutils
 
 class Transformation3D: 
     def __init__(self, euler = pyrr.euler.create(), center = pyrr.Vector3(), translation = pyrr.Vector3(), offset = pyrr.Vector3()):
@@ -139,6 +140,9 @@ class Camera:
             self.projection = pyrr.matrix44.create_perspective_projection(self.fovy, self.ratio, 0.01, 100)
 
 class Text(Object):
+    
+    font_dict = {}
+    
     def __init__(self, value, bottomLeft, topRight, vao, nb_triangle):
         self.value = value
         self.bottomLeft = bottomLeft
@@ -150,8 +154,11 @@ class Text(Object):
         cls.program = program
     
     @classmethod
-    def set_font(cls, font):
-        cls.font = font
+    def add_font(cls, color, font):
+        cls.font_dict[color] = glutils.load_texture(font)
+        
+    def set_font(self, color):
+        self.font = Text.font_dict[color]
 
     def draw(self):
         if Text.program is None: 
@@ -165,7 +172,7 @@ class Text(Object):
             print("Pas de variable uniforme : size")
         GL.glUniform2f(loc, size[0], size[1])
         GL.glBindVertexArray(self.vao)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, Text.font)
+        GL.glBindTexture(GL.GL_TEXTURE_2D, self.font)
         for idx, c in enumerate(self.value):
             loc = GL.glGetUniformLocation(self.program, "start")
             if (loc == -1) :

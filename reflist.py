@@ -34,6 +34,7 @@ if __name__ == '__main__':
     test.append(52)
     test.append(print)
     test.link('func', -1)
+    test += [1, True]
     print(test)
     print(test[1])
     print(test['test'])

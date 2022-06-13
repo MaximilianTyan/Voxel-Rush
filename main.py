@@ -10,48 +10,64 @@ from background import Background
 from level import Level
 
 def main():
-    viewer = ViewerGL()
+    change2D = input("Replace 'texture2D' with 'texture' in .frag files ?\n\
+            On linux, replacing 'texture2D' with 'texture' should work\n\
+            On Windows keeping 'texture2D' should work\n\
+            \"Or at least it works on my machine\"\n\
+            Proceed to replace ? y/n\n>")
+    folder = 'frag_2D' if change2D == 'y' else 'frag_no2D'
+    
+    
+    mainSwitch = ['title']
+    viewer = ViewerGL(mainSwitch)
     
     camera = Camera()
     viewer.set_camera(camera)
     viewer.cam.transformation.translation.z = 10
     #viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
 
-    program3d_id = glutils.create_program_from_file('shaders/shader.vert', 'shaders/shader.frag')
-    programGUI_id = glutils.create_program_from_file('shaders/gui.vert', 'shaders/gui.frag')
+    program3d_id = glutils.create_program_from_file('shaders/vert/shader.vert',  f'shaders/{folder}/shader.frag')
+    programGUI_id = glutils.create_program_from_file('shaders/vert/gui.vert',    f'shaders/{folder}/gui.frag')
     
     Object3D.set_program(program3d_id)
     Text.set_program(programGUI_id)
     
-    player = Player()
+    player = Player(mainSwitch)
     #player.wireframe = True
     viewer.add_ref_object('player', player)
     viewer.add_clocked_object(player)
     
     bkg = Background(camera)
-    viewer.add_object(bkg.get_walls())
+    viewer.add_object('level', bkg.get_walls())
     viewer.set_background(bkg.get_walls())
     
-    level = Level(camera, level='0')
+    level = Level(camera, level='test')
     viewer.add_clocked_object(level)
     level.load()
     
     player.set_terrain(level)
     
-    viewer.add_object(level.obstacles)
+    viewer.add_object('level', level.obstacles)
 
     # for obj in viewer.objs:
     #     print(type(obj), obj.get_coords())
         
     #load_reference(viewer)
-    Text.set_font(glutils.load_texture('ressources/textures/fontB.jpg'))
+    for color in ('red','purple','yellow','green','blue'):
+        Text.add_font(color, 'ressources/fonts/font_' + color + '.jpg')
+    
     vao = Text.initalize_geometry()
-    o = Text('Voxel', np.array([-0.8, 0.3], np.float32), np.array([0.8, 0.8], np.float32), vao, 2)
-    viewer.add_object(o)
-    o = Text('RUSH', np.array([-0.5, -0.2], np.float32), np.array([0.5, 0.3], np.float32), vao, 2)
-    viewer.add_object(o)
+    voxel_label = Text('Voxel', np.array([-0.3, 0.4], np.float32), np.array([0.2, 0.8], np.float32), vao, 2)
+    voxel_label.set_font('yellow')
+    viewer.add_object('title', voxel_label)
     
+    rush_label = Text('RUSH', np.array([-0.3, 0.1], np.float32), np.array([0.3, 0.5], np.float32), vao, 2)
+    rush_label.set_font('blue')
+    viewer.add_object('title',rush_label)
     
+    press_label = Text('Press SPACE to start', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
+    press_label.set_font('red')
+    viewer.add_object('title',press_label)
     
     viewer.run()
 
