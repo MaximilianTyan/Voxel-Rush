@@ -19,11 +19,22 @@ class Object:
         self.visible = True
         self.wireframe = False
         self.hitboxvisible = False
+        self.name = None
     
     def __repr__(self):
-        return str(type(self))[8:-2]
+        if self.name is None:
+            return str(type(self))[8:-2]
+        else:
+            return str(self.name)
+    
+    def set_name(self, name):
+        self.name = name
 
     def draw(self):
+        
+        #print('########## Draw :', self.__repr__())
+        #print(f"vao: {self.vao}, \tprog:{self.program}, \ttex:{self.texture}")
+        #print(f"vis:{self.visible}, \tpos:{self.transformation.translation}, \toff:{self.transformation.offset}")
         if self.visible:
             if type(self).program is None: 
                 raise Exception("Le programme de rendu n'a pas été précisé")
@@ -95,37 +106,20 @@ class Object3D(Object):
             raise Exception("Le programme de rendu n'a pas été précisé")
         GL.glUseProgram(Object3D.program)
 
-        # Récupère l'identifiant de la variable pour le programme courant
         loc = GL.glGetUniformLocation(self.program, "translation_model")
-        # Vérifie que la variable existe
-        if (loc == -1) :
-            print("Pas de variable uniforme : translation_model")
-        # Modifie la variable pour le programme courant
         translation = self.transformation.translation
         GL.glUniform4f(loc, translation.x, translation.y, translation.z, 0)
         
-        # Récupère l'identifiant de la variable pour le programme courant
         loc = GL.glGetUniformLocation(self.program, "offset_model")
-        # Vérifie que la variable existe
-        if (loc == -1) :
-            print("Pas de variable uniforme : offset_model")
-        # Modifie la variable pour le programme courant
         offset = self.transformation.offset
         GL.glUniform4f(loc, offset.x, offset.y, offset.z, 0)
 
-        # Récupère l'identifiant de la variable pour le programme courant
         loc = GL.glGetUniformLocation(self.program, "rotation_center_model")
-        # Vérifie que la variable existe
-        if (loc == -1) :
-            print("Pas de variable uniforme : rotation_center_model")
-        # Modifie la variable pour le programme courant
         rotation_center = self.transformation.rotation_center
         GL.glUniform4f(loc, rotation_center.x, rotation_center.y, rotation_center.z, 0)
 
         rot = pyrr.matrix44.create_from_eulers(self.transformation.rotation_euler)
         loc = GL.glGetUniformLocation(self.program, "rotation_model")
-        if (loc == -1) :
-            print("Pas de variable uniforme : rotation_model")
         GL.glUniformMatrix4fv(loc, 1, GL.GL_FALSE, rot)
 
         super().draw()
@@ -159,8 +153,15 @@ class Text(Object):
         
     def set_font(self, color):
         self.font = Text.font_dict[color]
+        
+    
+    def __repr__(self):
+        return f"Text:'{self.value}'"
 
     def draw(self):
+        
+        #print('Draw', self.__repr__())
+        
         if Text.program is None: 
             raise Exception("Le programme de rendu n'a pas été précisé")
         GL.glUseProgram(Text.program)
@@ -168,20 +169,14 @@ class Text(Object):
         size = self.topRight-self.bottomLeft
         size[0] /= len(self.value)
         loc = GL.glGetUniformLocation(self.program, "size")
-        if (loc == -1) :
-            print("Pas de variable uniforme : size")
         GL.glUniform2f(loc, size[0], size[1])
         GL.glBindVertexArray(self.vao)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.font)
         for idx, c in enumerate(self.value):
             loc = GL.glGetUniformLocation(self.program, "start")
-            if (loc == -1) :
-                print("Pas de variable uniforme : start")
             GL.glUniform2f(loc, self.bottomLeft[0]+idx*size[0], self.bottomLeft[1])
 
             loc = GL.glGetUniformLocation(self.program, "c")
-            if (loc == -1) :
-                print("Pas de variable uniforme : c")
             GL.glUniform1i(loc, np.array(ord(c), np.int32))
 
             GL.glDrawElements(GL.GL_TRIANGLES, 3*2, GL.GL_UNSIGNED_INT, None)

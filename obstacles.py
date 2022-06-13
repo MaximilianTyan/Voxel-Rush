@@ -6,32 +6,24 @@ from cpe3d import Object3D, Transformation3D
 import numpy as np
 import pyrr
 
+def init():
+    Spike.init()
+    Cube.init()
+    Jump.init()
+
 class Spike(Object3D):
-    def __init__(self, x, y, z, orientation='UP'):
-        
-        texture = glutils.load_texture('ressources/textures/red.png')
-        """
-        m = Mesh()
-        points  = [ [0, 0, 0],  [1, 0, 0],  [0, 0, 1],     [1, 0, 1],      [0.5, 1, 0.5]]
-        texcoords = [[0, 0],     [0, 1],       [0, 1],       [1, 1],            [0.5, 0.5]]
-        
-        n = [0,0,1]
-        c = [1,1,1]
-        
-        m.vertices = np.array([p + n + c + t for p, t in zip(points, texcoords)], np.float32)
-        
-        faces = [   [0,1,3],
-                    [0,2,3], 
-                    [0,4,2],
-                    [2,4,3], 
-                    [3,4,1],
-                    [1,4,0] ]
-        m.faces = np.array(faces, np.uint32)
-        """
-        
+    @classmethod
+    def init(cls):
         m = Mesh.load_obj('ressources/meshes/spike.obj')
         m.normalize()
         m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 0.5, 0.5, 1]))
+        
+        cls.vao = m.load_to_gpu()
+        cls.triangles = m.get_nb_triangles()
+        
+        cls.texture = glutils.load_texture('ressources/textures/red.png')
+    
+    def __init__(self, x, y, z, orientation='UP'):
         
         transformation = Transformation3D()
         transformation.translation = pyrr.Vector3([x, y, z])
@@ -50,29 +42,79 @@ class Spike(Object3D):
         
         self.bounding_box =  (pyrr.Vector3([0, 0, 0]),  pyrr.Vector3([1, 0.9, 1]))
 
-        super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
+        super().__init__(Spike.vao, Spike.triangles, Spike.texture, transformation)
         #self.wireframe = True
         self.hitboxvisible = False
 
 
 class Cube(Object3D):
-    def __init__(self, x, y, z):
+    
+    @classmethod
+    def init(cls):
         m = Mesh.load_obj('ressources/meshes/cube.obj')
         m.normalize()
-        
+            
         m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 0.5, 0.5, 1]))
         
+        cls.vao = m.load_to_gpu()
+        cls.triangles = m.get_nb_triangles()
+        
+        cls.texture = glutils.load_texture('ressources/textures/blue_square.png')
+    
+    def __init__(self, x, y, z):
         transformation = Transformation3D()
         transformation.translation = pyrr.Vector3([x,y,z])
         transformation.offset = pyrr.Vector3([0.5, 0.5, 0.5])
         
-        texture = glutils.load_texture('ressources/textures/blue_square.png')
-        
         self.bounding_box =  (pyrr.Vector3([0, 0, 0]),  pyrr.Vector3([1, 1, 1]))
         
-        super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
+        super().__init__(Cube.vao, Cube.triangles, Cube.texture, transformation)
         
+
+class Jump(Object3D):
+    @classmethod
+    def init(cls):
+        m = Mesh.load_obj('ressources/meshes/diamond.obj')
+        m.normalize()
+            
+        m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 1, 0.5, 1]))
+        cls.vao = m.load_to_gpu()
+        cls.triangles = m.get_nb_triangles()
+        
+        cls.texture = glutils.load_texture('ressources/textures/sun.png')
+    
+    def __init__(self, x, y, z):
+        
+        transformation = Transformation3D()
+        transformation.translation = pyrr.Vector3([x,y,z])
+        transformation.offset = pyrr.Vector3([0.5, 0, 0.5])
+
+        self.bounding_box = (pyrr.Vector3([0.3,0,0.3]),  pyrr.Vector3([0.7,0.1,0.7]))
+        
+        super().__init__(Jump.vao, Jump.triangles, Jump.texture, transformation)
+        self.hitboxvisible = False
+
+
         """
+        m = Mesh()
+        points  = [ [0, 0, 0],  [1, 0, 0],  [0, 0, 1],     [1, 0, 1],      [0.5, 1, 0.5]]
+        texcoords = [[0, 0],     [0, 1],       [0, 1],       [1, 1],            [0.5, 0.5]]
+        
+        n = [0,0,1]
+        c = [1,1,1]
+        
+        m.vertices = np.array([p + n + c + t for p, t in zip(points, texcoords)], np.float32)
+        
+        faces = [   [0,1,3],
+                    [0,2,3], 
+                    [0,4,2],
+                    [2,4,3], 
+                    [3,4,1],
+                    [1,4,0] ]
+        m.faces = np.array(faces, np.uint32)
+        """
+
+"""
         points  = [ [0, 0, 0],  [1, 0, 0],  [0, 1, 0],   [0, 0, 1], 
                     [0, 1, 1],  [1, 0, 1],  [1, 1, 0],   [1, 1, 1] ]
         
@@ -97,21 +139,3 @@ class Cube(Object3D):
         m.faces = np.array(faces, np.uint32)
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
         """
-        
-class Jump(Object3D):
-    def __init__(self, x, y, z):
-        m = Mesh.load_obj('ressources/meshes/diamond.obj')
-        m.normalize()
-        
-        m.apply_matrix(pyrr.matrix44.create_from_scale([0.5, 1, 0.5, 1]))
-        
-        transformation = Transformation3D()
-        transformation.translation = pyrr.Vector3([x,y,z])
-        transformation.offset = pyrr.Vector3([0.5, 0, 0.5])
-        
-        texture = glutils.load_texture('ressources/textures/sun.png')
-
-        self.bounding_box = (pyrr.Vector3([0.3,0,0.3]),  pyrr.Vector3([0.7,0.1,0.7]))
-        
-        super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
-        self.hitboxvisible = False

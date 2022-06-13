@@ -1,6 +1,6 @@
 #coding:utf-8
 import math
-from obstacles import Spike, Cube, Jump
+import obstacles
 
 class LevelError(Exception):
     def __init__(self, *args) -> None:
@@ -10,20 +10,26 @@ class Level():
     def __init__(self, camera, level=0):
         self.file = f"levels/level_{level}.txt"
         self.camera = camera
-        self.obstacles = []
+        self.obs = []
+    
+    def init():
+        obstacles.init()
         
     def add_element(self, element):
         element.visible = True
-        self.obstacles.append(element)
+        self.obs.append(element)
     
     def get_relevant_aabb(self, px, py):
         relevant_aabb = []
-        for obj in self.obstacles:
+        for obj in self.obs:
             if px -1.5 <= obj.transformation.translation.x <= px + 1 and \
                 py -1.5 <= obj.transformation.translation.y <= py + 1:
                 relevant_aabb.append(obj)
         return relevant_aabb
 
+    def get_obstacles(self):
+        return self.obs
+    
     def load(self):
         print("Loading level {}...".format(self.file))
         with open(self.file) as file:
@@ -62,15 +68,15 @@ class Level():
                 if element in ('.', 'S', '|'):
                     continue
                 elif element == '@':
-                    obj = Cube(x, y, 0)
+                    obj = obstacles.Cube(x, y, 0)
                 elif element == '^':
-                    obj = Spike(x, y, 0, 'UP')
+                    obj = obstacles.Spike(x, y, 0, 'UP')
                 elif element == 'v':
-                    obj = Spike(x, y, 0, 'DOWN')
+                    obj = obstacles.Spike(x, y, 0, 'DOWN')
                 elif element == '<':
-                    obj = Spike(x, y, 0, 'LEFT')
+                    obj = obstacles.Spike(x, y, 0, 'LEFT')
                 elif element == 'J':
-                    obj = Jump(x,y, 0)
+                    obj = obstacles.Jump(x,y, 0)
                 else:
                     raise LevelError(f"Unsupported element:'{element}'")
                 #print(x,y, element, j, i)
@@ -79,7 +85,7 @@ class Level():
     def tick_clock(self, dt, crttime):
         cx, cy, cz = self.camera.transformation.translation.xyz
         
-        test_offset = 0
+        test_offset = -1
         
         FOV_width = abs((cz - test_offset) * math.tan((180/math.pi)*self.camera.fovx)/2 )
         FOV_height = abs((cz - test_offset) * math.tan((180/math.pi)*self.camera.fovy)/2)
@@ -90,7 +96,7 @@ class Level():
         #print(FOV_width, FOV_height)
         #print(FOV_UpLeft, (FOV_UpLeft[0] + FOV_width, FOV_UpLeft[1] - FOV_height))
         
-        for element in self.obstacles:
+        for element in self.obs:
             
             if (FOV_UpLeft[0] <= element.transformation.translation.x <= FOV_UpLeft[0] + FOV_width) \
                 and (FOV_UpLeft[1] >= element.transformation.translation.y >= FOV_UpLeft[1] - FOV_height):

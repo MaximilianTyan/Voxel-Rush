@@ -15,27 +15,33 @@ class Wall(Object3D):
     
 class Background():
     def __init__(self, camera):
+
         # points  = [[-25, 0, -25],    [25, 0, -25],   [25, 0, 25],    [-25, 0, 25]]
         # texcoords = [[0, 0],           [1, 0],         [1, 1],         [0, 1]]
         self.wall_list = []
         self.cam = camera
         
         texture = glutils.load_texture('ressources/textures/background.png')
+        
         points  = [[-5, 0, 0],    [-5, 5, 0],   [5, 5, 0],    [5, 0, 0]]
         texcoords = [[0, 0],         [0, 1],       [1, 1],       [1, 0]]
         faces = [[0, 1, 2], [0, 2, 3]]
-        self.wall_list.append(Wall(points, faces, texcoords, texture=texture))
+        wall = Wall(points, faces, texcoords, texture=texture)
+        wall.set_name('backwall')
+        self.wall_list.append(wall)
         
         frontwall = Wall(points, faces, texcoords, texture=texture)
         frontwall.transformation.offset.y = -5
         frontwall.transformation.offset.z = 1
+        frontwall.set_name('frontwall')
         self.wall_list.append(frontwall)
         
-        texture = glutils.load_texture('ressources/textures/background.png')
         points  = [[-5, 0, 1],    [-5, 0, 0],   [5, 0, 0],    [5, 0, 1]]
         texcoords = [[0, 0],         [1, 0],       [1, 1],       [0, 1]]
         faces = [[0, 1, 2], [0, 2, 3]]
-        self.wall_list.append(Wall(points, faces, texcoords, texture=texture))
+        wall = Wall(points, faces, texcoords, texture=texture)
+        wall.set_name('pathway')
+        self.wall_list.append(wall)
     
     def get_walls(self):
         return self.wall_list

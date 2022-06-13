@@ -39,21 +39,22 @@ class Player(Object3D):
         self.terrain = terrain
     
     def tick_clock(self, dt, crttime):
+        #print("-----ticked clock-----", f"{dt=}, {crttime=}")
         
         if self.onground:
             self.transformation.rotation_euler[pyrr.euler.index().pitch] = 0
         else:
             self.transformation.rotation_euler[pyrr.euler.index().pitch] += dt * 4
         
-        print('accleration',self.acceleration)
+        #print('accleration',self.acceleration)
         self.velocity = self.velocity + dt * self.acceleration 
         if self.onground:
             self.velocity.y = 0
         
-        print('velocity', self.velocity)
+        #print('velocity', self.velocity)
         self.transformation.translation = self.transformation.translation + dt * self.velocity
         
-        print('position', self.transformation.translation)
+        #print('position', self.transformation.translation)
         self.test_collisions()
 
         if self.transformation.translation.y < 0:
@@ -61,6 +62,10 @@ class Player(Object3D):
             self.transformation.translation.y = 0
             self.transformation.rotation_euler[pyrr.euler.index().pitch] = 0
             self.onground = True
+        
+        #print('final position', self.transformation.translation)
+        #print('-'*25)
+        
 
     def death(self):
         print('You died')

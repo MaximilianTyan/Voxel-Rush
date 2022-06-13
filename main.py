@@ -38,16 +38,16 @@ def main():
     viewer.add_clocked_object(player)
     
     bkg = Background(camera)
-    viewer.add_object('level', bkg.get_walls())
     viewer.set_background(bkg.get_walls())
     
+    Level.init()
     level = Level(camera, level='test')
     viewer.add_clocked_object(level)
     level.load()
     
     player.set_terrain(level)
     
-    viewer.add_object('level', level.obstacles)
+    viewer.add_object('level', level.get_obstacles())
 
     # for obj in viewer.objs:
     #     print(type(obj), obj.get_coords())
@@ -69,6 +69,8 @@ def main():
     press_label.set_font('red')
     viewer.add_object('title',press_label)
     
+    #show_axis(viewer)
+    
     viewer.run()
 
 
@@ -83,7 +85,7 @@ def show_axis(viewer):
     m.faces = np.array([[0, 1, 2], [0, 2, 3], [0, 1, 3]], np.uint32)
     o = Object3D(m.load_to_gpu(), m.get_nb_triangles())
     o.wireframe = True
-    viewer.add_object(o)
+    viewer.add_object('common', o)
 
 """
     m = Mesh.load_obj('ressources/meshes/stegosaurus.obj')
