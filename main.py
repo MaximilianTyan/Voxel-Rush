@@ -76,7 +76,50 @@ def main():
     press_label = Text('Press SPACE to start', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
     press_label.set_font('red')
     viewer.add_object('title', press_label)
+
+
+    #level selection
+    voxel_label = Text('Voxel', np.array([-0.3, 0.4], np.float32), np.array([0.2, 0.8], np.float32), vao, 2)
+    voxel_label.set_font('yellow')
+    viewer.add_object('level_select_0', voxel_label)
     
+    rush_label = Text('RUSH', np.array([-0.3, 0.1], np.float32), np.array([0.3, 0.5], np.float32), vao, 2)
+    rush_label.set_font('blue')
+    viewer.add_object('level_select_0',rush_label)
+    
+    press_label = Text('Level 0', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
+    press_label.set_font('red')
+    viewer.add_object('level_select_0', press_label)
+
+
+
+    voxel_label = Text('Voxel', np.array([-0.3, 0.4], np.float32), np.array([0.2, 0.8], np.float32), vao, 2)
+    voxel_label.set_font('yellow')
+    viewer.add_object('level_select_1', voxel_label)
+    
+    rush_label = Text('RUSH', np.array([-0.3, 0.1], np.float32), np.array([0.3, 0.5], np.float32), vao, 2)
+    rush_label.set_font('blue')
+    viewer.add_object('level_select_1',rush_label)
+    
+    press_label = Text('Level 1', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
+    press_label.set_font('red')
+    viewer.add_object('level_select_1', press_label)
+
+
+
+    voxel_label = Text('Voxel', np.array([-0.3, 0.4], np.float32), np.array([0.2, 0.8], np.float32), vao, 2)
+    voxel_label.set_font('yellow')
+    viewer.add_object('level_select_2', voxel_label)
+    
+    rush_label = Text('RUSH', np.array([-0.3, 0.1], np.float32), np.array([0.3, 0.5], np.float32), vao, 2)
+    rush_label.set_font('blue')
+    viewer.add_object('level_select_2',rush_label)
+    
+    press_label = Text('Level 2', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
+    press_label.set_font('red')
+    viewer.add_object('level_select_2', press_label)
+    
+
     #show_axis(viewer)
     
     viewer.run()
