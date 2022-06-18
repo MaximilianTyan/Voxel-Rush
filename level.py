@@ -11,21 +11,18 @@ class Level():
         self.file = f"levels/level_{level}.txt"
         self.camera = camera
         self.obs = []
-    
-    def init():
-        obstacles.init()
         
     def add_element(self, element):
         element.visible = True
         self.obs.append(element)
     
-    def get_relevant_aabb(self, px, py):
-        relevant_aabb = []
+    def get_near_obstacles(self, px, py):
+        obs = []
         for obj in self.obs:
             if px -1.5 <= obj.transformation.translation.x <= px + 1 and \
                 py -1.5 <= obj.transformation.translation.y <= py + 1:
-                relevant_aabb.append(obj)
-        return relevant_aabb
+                obs.append(obj)
+        return obs
 
     def get_obstacles(self):
         return self.obs
@@ -37,9 +34,8 @@ class Level():
 
         self.start_pos = None
         self.finish_line = None
-        finishx = None
         for y,row in enumerate(map):
-            
+
             # Starting position detection
             startx = row.find('S')
             if startx != -1:
@@ -50,9 +46,9 @@ class Level():
             # Finish line detection
             finishx = row.find('|')
             if finishx != -1:
-                if (self.finish_line != None) and (self.finish_line[0] != finishx):
+                if (self.finish_line != finishx) and (self.finish_line != None):
                     raise LevelError('Finish line should be a vertical line')
-                self.finish_line = (finishx, len(map) - y)
+                self.finish_line = finishx
         
         if startx == -1: raise LevelError('Level file does not contain a starting position')
         if finishx == -1: raise LevelError('Level file does not contain a finish line')

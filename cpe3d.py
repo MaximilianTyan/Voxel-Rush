@@ -42,7 +42,8 @@ class Object:
             GL.glBindVertexArray(self.vao)
             if self.texture is not None:
                 GL.glBindTexture(GL.GL_TEXTURE_2D, self.texture)
-            if self.wireframe:
+                
+            if self.wireframe or self.texture is None:
                 draw_type = GL.GL_LINE_LOOP
             else:
                 draw_type = GL.GL_TRIANGLES
@@ -95,7 +96,6 @@ class Object3D(Object):
         
     def get_coords(self):
         return self.transformation.translation.xyz
-
     
     def draw(self):
         

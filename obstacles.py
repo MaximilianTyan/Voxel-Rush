@@ -5,11 +5,14 @@ from mesh import Mesh
 from cpe3d import Object3D, Transformation3D
 import numpy as np
 import pyrr
+from hitbox import HitBox
 
 def init():
     Spike.init()
     Cube.init()
     Jump.init()
+    print('[INIT] Obstacles classes initiated')
+
 
 class Spike(Object3D):
     @classmethod
@@ -22,6 +25,7 @@ class Spike(Object3D):
         cls.triangles = m.get_nb_triangles()
         
         cls.texture = glutils.load_texture('ressources/textures/red.png')
+        
     
     def __init__(self, x, y, z, orientation='UP'):
         
@@ -40,11 +44,13 @@ class Spike(Object3D):
         else:
             raise LevelError(f"Spike orientation not supported: {orientation}")
         
-        self.bounding_box =  (pyrr.Vector3([0, 0, 0]),  pyrr.Vector3([1, 0.9, 1]))
+        self.bounding_box =  (pyrr.Vector3([0, -0.01, 0]),  pyrr.Vector3([1, 0.7, 1]))
 
         super().__init__(Spike.vao, Spike.triangles, Spike.texture, transformation)
-        #self.wireframe = True
-        self.hitboxvisible = False
+        
+        self.hitbox = HitBox(self.bounding_box, [1, 0, 0])
+        self.hitboxvisible = True
+        
 
 
 class Cube(Object3D):
@@ -70,6 +76,10 @@ class Cube(Object3D):
         
         super().__init__(Cube.vao, Cube.triangles, Cube.texture, transformation)
         
+        self.hitbox = HitBox(self.bounding_box, [0, 1, 0])
+        self.hitboxvisible = True
+        
+        
 
 class Jump(Object3D):
     @classmethod
@@ -89,10 +99,11 @@ class Jump(Object3D):
         transformation.translation = pyrr.Vector3([x,y,z])
         transformation.offset = pyrr.Vector3([0.5, 0, 0.5])
 
-        self.bounding_box = (pyrr.Vector3([0.3,0,0.3]),  pyrr.Vector3([0.7,0.1,0.7]))
+        self.bounding_box = (pyrr.Vector3([0,0,0]),  pyrr.Vector3([1,0.1,1]))
         
         super().__init__(Jump.vao, Jump.triangles, Jump.texture, transformation)
-        self.hitboxvisible = False
+        self.hitbox = HitBox(self.bounding_box, [1, 1, 0])
+        self.hitboxvisible = True
 
 
         """

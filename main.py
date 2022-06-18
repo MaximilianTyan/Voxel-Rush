@@ -4,10 +4,11 @@ from mesh import Mesh
 from cpe3d import Object3D, Camera, Transformation3D, Text
 import numpy as np
 #import OpenGL.GL as GL
-#import pyrr
+import pyrr
 from player import Player
 from background import Background
 from level import Level
+import init
 
 def main():
     change2D = input("Replace 'texture2D' with 'texture' in .frag files ?\n\
@@ -19,18 +20,22 @@ def main():
     
     
     mainSwitch = ['title']
+    
     viewer = ViewerGL(mainSwitch)
     
     camera = Camera()
     viewer.set_camera(camera)
     viewer.cam.transformation.translation.z = 10
     #viewer.cam.transformation.rotation_center = viewer.cam.transformation.translation.copy()
+    viewer.cam.transformation.rotation_center = pyrr.Vector3([0,0,0])
 
     program3d_id = glutils.create_program_from_file('shaders/vert/shader.vert',  f'shaders/{folder}/shader.frag')
     programGUI_id = glutils.create_program_from_file('shaders/vert/gui.vert',    f'shaders/{folder}/gui.frag')
     
     Object3D.set_program(program3d_id)
     Text.set_program(programGUI_id)
+    
+    init.init_classes() # initialises objects
     
     player = Player(mainSwitch)
     #player.wireframe = True
@@ -41,10 +46,9 @@ def main():
     viewer.set_background(bkg.get_walls())
     
     # ===================================================
-    level_choice = 'test'
+    level_choice = '0'
     # ===================================================
     
-    Level.init()
     level = Level(camera, level=level_choice)
     viewer.add_clocked_object(level)
     level.load()

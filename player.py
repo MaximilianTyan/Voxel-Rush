@@ -5,7 +5,8 @@ from cpe3d import Object3D, Transformation3D, Text
 import numpy as np
 import OpenGL.GL as GL
 import pyrr, time
-from obstacles import Spike, Cube, Jump
+from obstacles import Spike, Cube, Jump, HitBox
+from hitbox import HitBox
 
 class Player(Object3D):
     def __init__(self, switch):
@@ -22,24 +23,27 @@ class Player(Object3D):
         
         texture = glutils.load_texture('ressources/textures/eliacube.png')
         
-        self.bounding_box = (pyrr.Vector3([0, 0, 0]),  pyrr.Vector3([1, 0.99, 1]))
+        self.bounding_box = (pyrr.Vector3([0.01, 0, 0.01]),  pyrr.Vector3([0.99, 0.99, 0.99]))
         
         transformation.translation = pyrr.Vector3([0, 0, 0])
-        self.velocity = pyrr.Vector3([7, 0, 0])
+        self.velocity = pyrr.Vector3([0, 0, 0])
         self.acceleration = pyrr.Vector3([0, -50, 0])
         
         self.onground = True
-        self.moveforward = False
-        self.another_chance = False
-        self.prevtime = 0
         
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
         
+        self.hitbox = HitBox(self.bounding_box, [1, 1, 1])
+        self.hitboxvisible = True
+        self.wireframe = True
+        
+    
     def set_terrain(self, terrain):
         self.terrain = terrain
     
     def tick_clock(self, dt, crttime):
         #print("-----ticked clock-----", f"{dt=}, {crttime=}")
+        prev_pos = self.transformation.translation
         
         if self.onground:
             self.transformation.rotation_euler[pyrr.euler.index().pitch] = 0
@@ -50,6 +54,8 @@ class Player(Object3D):
         self.velocity = self.velocity + dt * self.acceleration 
         if self.onground:
             self.velocity.y = 0
+        if self.velocity.y < -17:
+            self.velocity.y = -17
         
         #print('velocity', self.velocity)
         self.transformation.translation = self.transformation.translation + dt * self.velocity
@@ -65,7 +71,7 @@ class Player(Object3D):
         
         #print('final position', self.transformation.translation)
         #print('-'*25)
-        
+        print(self.transformation.translation - prev_pos)
 
     def death(self):
         print('You died')
@@ -74,7 +80,7 @@ class Player(Object3D):
         self.onground = True
     
     def step_start(self):
-        self.velocity.x = 7
+        self.velocity.x = 10
         
         #print(self.transformation.translation, self.velocity, self.acceleration, self.transformation.offset, t, time.time())
     
@@ -90,49 +96,68 @@ class Player(Object3D):
         self.onground = False
         print('LONG JUMPED')
     
-    def test_collisions(self):
+    def test_collisions(self, hasSpareChance=True):
+        points_touched = self.check_points()
+        #print(points_touched)
+        if len(points_touched) == 0:
+            self.onground = False
+            return
+        
+        #(1,4,2,6) bottom points
+        #(3,5,7,8) top points
+        
+        for i in (5,8): #(3,5,7,8) top points
+            obj = points_touched[i-1]
+            if isinstance(obj, Cube):
+                print('Top collision with Cube')
+                self.death()
+                return
+            elif isinstance(obj, Spike):
+                print('Top collision with Spike')
+                self.death()
+                return
+        
+        recheck = False
+        for i in (4,6): #(1,4,2,6) bottom points
+            obj = points_touched[i-1]
+            if isinstance(obj, Jump):
+                self.longjump()
+                return
+                
+            elif isinstance(obj, Cube):
+                if abs(obj.transformation.translation.y - self.transformation.translation.y) >= 1 -0.4:
+                    self.onground = True
+                    self.transformation.translation.y = obj.transformation.translation.y + obj.bounding_box[1].y
+                    #print('Avoided front collision')
+                    recheck = True
+                else:
+                    print('Front collision with Cube')
+                    self.death()
+                    return
+            
+            if isinstance(obj, Spike):
+                if recheck and hasSpareChance:
+                    self.test_collisions(hasSpareChance=False)
+                else:
+                    self.death()
+                    return
+
+    
+    def check_points(self):
         px, py = self.transformation.translation.xy
-        #print(px, py)
-        #print('Near', self.terrain.get_relevant_aabb(px, py))
+        
+        #print('position', px, py)
+        #print('Near', self.terrain.get_near_obstacles(px, py))
         #print(self.get_aabb_points())
         
-        points_touched = {}
-        for obj in self.terrain.get_relevant_aabb(px, py):
-
-            points_touched[type(obj)] = []
-
+        points_touched = [None]*8
+        for obj in self.terrain.get_near_obstacles(px, py):
             minpt, maxpt = obj.bounding_box
             minpt = minpt + obj.transformation.translation
             maxpt = maxpt + obj.transformation.translation
             
-            #print('OBJ:', obj, obj.transformation.translation, minpt, maxpt)
-            #  minpt,  pmin1, pmin2, pmin3, pmax1, pmax2, pmax3, maxpt
             for i, point in enumerate(self.get_aabb_points()):
                 if minpt.x <= point.x <= maxpt.x and minpt.y <= point.y <= maxpt.y and minpt.z <= point.z <= maxpt.z:
-                    points_touched[type(obj)].append(i)
-            
-            #print('points', points_touched)
-        
-        if len(points_touched) == 0:
-            self.onground = False
-
-        elif Jump in points_touched.keys():
-            self.longjump()
-            
-        elif Cube in points_touched.keys():
-            points = points_touched[Cube]
-            if (7 in points) or (6 in points) or (4 in points) or (2 in points):
-                self.death()
-            elif (1 in points) or (5 in points) or (3 in points) or (0 in points):
-                self.onground = True
-                self.transformation.translation.y = maxpt.y
-
-        elif Spike in points_touched.keys():
-            self.death()
-
-            
-
-            
-
-            
-
+                    #print(i, obj, minpt, maxpt, point)
+                    points_touched[i] = obj
+        return points_touched

@@ -39,8 +39,17 @@ class ViewerGL:
         self.clocked_objs= []
         self.objs = {'common':reflist()}
         self.touch = {}
+        self.slow_time = False
 
     def run(self):
+
+        # # Camera follow player
+        # player_pos = self.objs['common']['player'].transformation.translation.xyz
+        # cam_offset = pyrr.Vector3([3, 3, 10])
+        # cam_center = [1,0,1] * player_pos + cam_offset
+        # self.cam.transformation.translation = cam_center
+        # self.cam.transformation.rotation_center = cam_center
+        
         print('camera:', self.cam)
         print('background:', self.background)
         
@@ -58,15 +67,20 @@ class ViewerGL:
                 dt = crt_time - self.prevtime
                 self.prevtime = crt_time
                 
+                if self.slow_time:
+                    dt *= 0.1
+                
                 for obj in self.clocked_objs:
                     obj.tick_clock(dt, crt_time)
             
             # Camera follow player
             player_pos = self.objs['common']['player'].transformation.translation.xyz
-            cam_offset = pyrr.Vector3([3,3,10])
-            if abs(player_pos.y - self.cam.transformation.translation.y) < 3:
-                cam_center = [1, 0, 1] * player_pos + cam_offset
+            cam_offset = pyrr.Vector3([3, 0, 10])
+            if player_pos.y < 6:
+                cam_offset.y = 3
+                cam_center = [1,0,1] * player_pos + cam_offset
             else:
+                cam_offset.y = -3
                 cam_center = player_pos + cam_offset
             
             self.cam.transformation.translation = cam_center
@@ -92,7 +106,9 @@ class ViewerGL:
                     obj.draw()
 
                     if obj.hitboxvisible:
-                        self.draw_box(obj.get_aabb_points())
+                        #print('draw hitbox', obj)
+                        obj.hitbox.transformation.translation = obj.transformation.translation
+                        obj.hitbox.draw()
 
             # changement de buffer d'affichage pour éviter un effet de scintillement
             glfw.swap_buffers(self.window)
@@ -165,12 +181,14 @@ class ViewerGL:
         GL.glUniformMatrix4fv(loc, 1, GL.GL_FALSE, self.cam.projection)
 
     def update_key(self):
-        
+
         if self.switch[0] == 'level':
             if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
                 self.objs['common']['player'].jump()
             if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
-                self.objs['common']['player'].step_start()
+                self.slow_time = True
+            else:
+                self.slow_time = False
             
             if glfw.KEY_R in self.touch and self.touch[glfw.KEY_R] > 0:
                 self.objs['common']['player'].death()
@@ -181,9 +199,9 @@ class ViewerGL:
         elif self.switch[0] == 'title':
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
                 glfw.set_window_should_close(self.window, glfw.TRUE)
-            if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
+            if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
                 print('='*20 + 'Started level' + '='*20)
-                #self.objs['common']['player'].step_start()
+                self.objs['common']['player'].step_start()
                 self.switch[0] = 'level'
                 glfw.set_time(0)
                 #self.objs['common']['player'].death()
@@ -197,8 +215,16 @@ class ViewerGL:
         if glfw.KEY_L in self.touch and self.touch[glfw.KEY_L] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().yaw] += 0.1
         
-        
-        
+        """
+        if glfw.KEY_UP in self.touch and self.touch[glfw.KEY_UP] > 0:
+            self.cam.transformation.translation.z += 0.02
+        if glfw.KEY_DOWN in self.touch and self.touch[glfw.KEY_DOWN] > 0:
+            self.cam.transformation.translation.z -= 0.02
+        if glfw.KEY_LEFT in self.touch and self.touch[glfw.KEY_LEFT] > 0:
+            self.cam.transformation.translation.x -= 0.02
+        if glfw.KEY_RIGHT in self.touch and self.touch[glfw.KEY_RIGHT] > 0:
+            self.cam.transformation.translation.x += 0.02
+        """
         
         
         
