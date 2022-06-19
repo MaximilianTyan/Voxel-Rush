@@ -3,6 +3,10 @@ import pyrr
 import numpy as np 
 import glutils
 
+def init():
+    Text.init()
+    print('[INIT] cpe3d classes initiated')
+
 class Transformation3D: 
     def __init__(self, euler = pyrr.euler.create(), center = pyrr.Vector3(), translation = pyrr.Vector3(), offset = pyrr.Vector3()):
         self.rotation_euler = euler.copy()
@@ -98,7 +102,6 @@ class Object3D(Object):
         return self.transformation.translation.xyz
     
     def draw(self):
-        
         if not self.visible:
             return
         
@@ -136,13 +139,18 @@ class Camera:
 class Text(Object):
     
     font_dict = {}
-    
-    def __init__(self, value, bottomLeft, topRight, vao, nb_triangle):
+    # remplace & par charactère variable
+    def __init__(self, value, bottomLeft, topRight, nb_triangle=2):
         self.value = value
         self.bottomLeft = bottomLeft
         self.topRight = topRight
-        super().__init__(vao, nb_triangle, type(self).program, None)
+        self.spec_chars = []
+        super().__init__(Text.vao, nb_triangle, type(self).program, None)
 
+    @classmethod
+    def init(cls):
+        cls.vao = cls.initalize_geometry()
+    
     @classmethod
     def set_program(cls, program):
         cls.program = program
@@ -153,26 +161,36 @@ class Text(Object):
         
     def set_font(self, color):
         self.font = Text.font_dict[color]
-        
     
     def __repr__(self):
         return f"Text:'{self.value}'"
+    
+    def format(self, chars):
+        self.spec_chars = chars
 
     def draw(self):
-        
+        if not self.visible:
+            return
         #print('Draw', self.__repr__())
+        #print(self.value, self.spec_chars)
+        parts = self.value.split('&')
+        #print('-'*5,'new line:', self.value, parts, self.spec_chars)
+        display_value = parts[0]
+        for i, char in enumerate(self.spec_chars):
+            display_value += str(char) + parts[i+1]
+        #print('display', display_value)
         
         if Text.program is None: 
             raise Exception("Le programme de rendu n'a pas été précisé")
         GL.glUseProgram(Text.program)
         GL.glDisable(GL.GL_DEPTH_TEST)
         size = self.topRight-self.bottomLeft
-        size[0] /= len(self.value)
+        size[0] /= len(display_value)
         loc = GL.glGetUniformLocation(self.program, "size")
         GL.glUniform2f(loc, size[0], size[1])
         GL.glBindVertexArray(self.vao)
         GL.glBindTexture(GL.GL_TEXTURE_2D, self.font)
-        for idx, c in enumerate(self.value):
+        for idx, c in enumerate(display_value):
             loc = GL.glGetUniformLocation(self.program, "start")
             GL.glUniform2f(loc, self.bottomLeft[0]+idx*size[0], self.bottomLeft[1])
 

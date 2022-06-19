@@ -23,7 +23,7 @@ class Player(Object3D):
         
         texture = glutils.load_texture('ressources/textures/eliacube.png')
         
-        self.bounding_box = (pyrr.Vector3([0.01, 0, 0.01]),  pyrr.Vector3([0.99, 0.99, 0.99]))
+        self.bounding_box = (pyrr.Vector3([0.01, 0, 0.01]),  pyrr.Vector3([0.99, 0.98, 0.99]))
         
         transformation.translation = pyrr.Vector3([0, 0, 0])
         self.velocity = pyrr.Vector3([0, 0, 0])
@@ -36,14 +36,14 @@ class Player(Object3D):
         self.hitbox = HitBox(self.bounding_box, [1, 1, 1])
         self.hitboxvisible = True
         self.wireframe = True
-        
+        self.deathcount = 0
     
     def set_terrain(self, terrain):
         self.terrain = terrain
     
     def tick_clock(self, dt, crttime):
         #print("-----ticked clock-----", f"{dt=}, {crttime=}")
-        prev_pos = self.transformation.translation
+        #prev_pos = self.transformation.translation
         
         if self.onground:
             self.transformation.rotation_euler[pyrr.euler.index().pitch] = 0
@@ -71,13 +71,14 @@ class Player(Object3D):
         
         #print('final position', self.transformation.translation)
         #print('-'*25)
-        print(self.transformation.translation - prev_pos)
+        #print(self.transformation.translation - prev_pos)
 
     def death(self):
         print('You died')
         self.transformation.translation = pyrr.Vector3([0, 0, 0])
-        self.velocity = pyrr.Vector3([7, 0, 0])
+        self.step_start()
         self.onground = True
+        self.deathcount += 1
     
     def step_start(self):
         self.velocity.x = 10
@@ -99,7 +100,7 @@ class Player(Object3D):
     def test_collisions(self, hasSpareChance=True):
         points_touched = self.check_points()
         #print(points_touched)
-        if len(points_touched) == 0:
+        if points_touched == [None]*8:
             self.onground = False
             return
         

@@ -1,17 +1,35 @@
 #coding:utf-8
 import math
 import obstacles
+import os
 
 class LevelError(Exception):
     def __init__(self, *args) -> None:
         super().__init__(*args)
 
 class Level():
-    def __init__(self, camera, level=0):
-        self.file = f"levels/level_{level}.txt"
+    def __init__(self, camera):
+        self.file = None
+        self.files_list = self.get_level_files()
         self.camera = camera
         self.obs = []
-        
+    
+    def get_level_files(self):
+        levels = []
+        for filename in os.listdir("./levels"):
+            prefix = 'level_'
+            suffix = '.txt'
+            if len(filename) > len(prefix) + len(suffix):
+                if (prefix in filename) and (suffix in filename):
+                    levels.append(filename)
+        return levels
+
+    def get_files_list(self):
+        return self.files_list
+    
+    def get_lvl_name(self, filename):
+        return filename[len('level_'):-len('.txt')]
+    
     def add_element(self, element):
         element.visible = True
         self.obs.append(element)
@@ -26,6 +44,9 @@ class Level():
 
     def get_obstacles(self):
         return self.obs
+    
+    def set_level(self, level):
+        self.file = './levels/' + str(level)
     
     def load(self):
         print("Loading level {}...".format(self.file))

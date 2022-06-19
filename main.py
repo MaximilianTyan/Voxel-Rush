@@ -8,6 +8,7 @@ import pyrr
 from player import Player
 from background import Background
 from level import Level
+from menus import Menus
 import init
 
 def main():
@@ -19,7 +20,7 @@ def main():
     folder = 'frag_2D' if change2D == 'y' else 'frag_no2D'
     
     
-    mainSwitch = ['title']
+    mainSwitch = ['title', 0]
     
     viewer = ViewerGL(mainSwitch)
     
@@ -45,17 +46,12 @@ def main():
     bkg = Background(camera)
     viewer.set_background(bkg.get_walls())
     
-    # ===================================================
-    level_choice = '0'
-    # ===================================================
-    
-    level = Level(camera, level=level_choice)
+    level = Level(camera)
+    viewer.set_terrain(level)
     viewer.add_clocked_object(level)
-    level.load()
-    
-    player.set_terrain(level)
     
     viewer.add_object('level', level.get_obstacles())
+    player.set_terrain(level)
 
     # for obj in viewer.objs:
     #     print(type(obj), obj.get_coords())
@@ -65,61 +61,9 @@ def main():
         Text.add_font(color, 'ressources/fonts/font_' + color + '.jpg')
     
     vao = Text.initalize_geometry()
-    voxel_label = Text('Voxel', np.array([-0.3, 0.4], np.float32), np.array([0.2, 0.8], np.float32), vao, 2)
-    voxel_label.set_font('yellow')
-    viewer.add_object('title', voxel_label)
     
-    rush_label = Text('RUSH', np.array([-0.3, 0.1], np.float32), np.array([0.3, 0.5], np.float32), vao, 2)
-    rush_label.set_font('blue')
-    viewer.add_object('title',rush_label)
-    
-    press_label = Text('Press SPACE to start', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
-    press_label.set_font('red')
-    viewer.add_object('title', press_label)
-
-
-    #level selection
-    voxel_label = Text('Voxel', np.array([-0.3, 0.4], np.float32), np.array([0.2, 0.8], np.float32), vao, 2)
-    voxel_label.set_font('yellow')
-    viewer.add_object('level_select_0', voxel_label)
-    
-    rush_label = Text('RUSH', np.array([-0.3, 0.1], np.float32), np.array([0.3, 0.5], np.float32), vao, 2)
-    rush_label.set_font('blue')
-    viewer.add_object('level_select_0',rush_label)
-    
-    press_label = Text('Level 0', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
-    press_label.set_font('red')
-    viewer.add_object('level_select_0', press_label)
-
-
-
-    voxel_label = Text('Voxel', np.array([-0.3, 0.4], np.float32), np.array([0.2, 0.8], np.float32), vao, 2)
-    voxel_label.set_font('yellow')
-    viewer.add_object('level_select_1', voxel_label)
-    
-    rush_label = Text('RUSH', np.array([-0.3, 0.1], np.float32), np.array([0.3, 0.5], np.float32), vao, 2)
-    rush_label.set_font('blue')
-    viewer.add_object('level_select_1',rush_label)
-    
-    press_label = Text('Level 1', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
-    press_label.set_font('red')
-    viewer.add_object('level_select_1', press_label)
-
-
-
-    voxel_label = Text('Voxel', np.array([-0.3, 0.4], np.float32), np.array([0.2, 0.8], np.float32), vao, 2)
-    voxel_label.set_font('yellow')
-    viewer.add_object('level_select_2', voxel_label)
-    
-    rush_label = Text('RUSH', np.array([-0.3, 0.1], np.float32), np.array([0.3, 0.5], np.float32), vao, 2)
-    rush_label.set_font('blue')
-    viewer.add_object('level_select_2',rush_label)
-    
-    press_label = Text('Level 2', np.array([-0.8, -0.5], np.float32), np.array([0.8, -0.4], np.float32), vao, 2)
-    press_label.set_font('red')
-    viewer.add_object('level_select_2', press_label)
-    
-
+    menus = Menus()
+    viewer.set_menus(menus)
     #show_axis(viewer)
     
     viewer.run()

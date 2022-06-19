@@ -52,6 +52,8 @@ class ViewerGL:
         
         print('camera:', self.cam)
         print('background:', self.background)
+        print('terrain:', self.terrain)
+        print('menus:', self.menus)
         
         print('objs:', self.objs)
         print('clocked:', self.clocked_objs)
@@ -60,6 +62,8 @@ class ViewerGL:
         while not glfw.window_should_close(self.window):
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
+            #print(self.switch)
+            
             self.update_key()
             
             if self.switch[0] == 'level':
@@ -72,6 +76,13 @@ class ViewerGL:
                 
                 for obj in self.clocked_objs:
                     obj.tick_clock(dt, crt_time)
+                
+                deaths = self.objs['common']['player'].deathcount
+                self.menus.text_dict['level'][-1].format([deaths])
+                
+            elif self.switch[0] == 'select':
+                filename = self.terrain.get_files_list()[self.switch[1]]
+                self.menus.text_dict['select'][-1].format([self.terrain.get_lvl_name(filename)])
             
             # Camera follow player
             player_pos = self.objs['common']['player'].transformation.translation.xyz
@@ -95,11 +106,15 @@ class ViewerGL:
             #print('wall pos:\t', self.background[0].transformation.translation.xyz)
             
             #print('### LIST OBJS:', self.background, self.objs[self.switch[0]], self.objs['common'])
-            for obj in self.background + self.objs[self.switch[0]] + self.objs['common']:
+            #print(self.background, self.objs.get(self.switch[0], []), self.objs['common'], self.menus.get_text(self.switch))
+            obj_list = self.background + self.objs.get(self.switch[0], []) + self.objs['common'] + self.menus.get_text(self.switch)
+            #print(obj_list)
+            for obj in obj_list:
                 if obj.visible:
                     if obj.program is None: 
                         raise Exception(f"Le programme de rendu n'a pas été précisé : {obj.program} at {obj}")
                     GL.glUseProgram(obj.program)
+                    #print(obj, obj.program)
 
                     if isinstance(obj, Object3D):
                         self.update_camera(obj.program)
@@ -148,16 +163,12 @@ class ViewerGL:
     def set_camera(self, cam):
         self.cam = cam
     
-    def draw_box(self, points):
-        minpt,  pmin1, pmin2, pmin3, pmax1, pmax2, pmax3, maxpt = points
-        for pt in (points[1], points[2], points[3]):
-            self.draw_line(points[0], pt)
-        for pt in (points[-4], points[-3], points[-2]):
-            self.draw_line(points[-1], pt)
+    def set_terrain(self, terrain):
+        self.terrain = terrain
+    
+    def set_menus(self, menus):
+        self.menus = menus
 
-    def draw_line(self, pt1, pt2, color=(0, 0, 0)):
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-        GL.glDrawElements(GL.GL_LINES, 2, GL.GL_UNSIGNED_INT, None)
 
     def update_camera(self, prog):
         GL.glUseProgram(prog)
@@ -180,8 +191,8 @@ class ViewerGL:
         loc = GL.glGetUniformLocation(prog, "projection")
         GL.glUniformMatrix4fv(loc, 1, GL.GL_FALSE, self.cam.projection)
 
-    def update_key(self):
 
+    def update_key(self):
         if self.switch[0] == 'level':
             if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
                 self.objs['common']['player'].jump()
@@ -194,60 +205,51 @@ class ViewerGL:
                 self.objs['common']['player'].death()
                 
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
-                self.switch[0] = 'title'
+                del self.touch[glfw.KEY_ESCAPE]
+                self.switch[0] = 'pause'
+                
+        elif self.switch[0] == 'pause':
+            if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
+                del self.touch[glfw.KEY_ESCAPE]
+                self.switch[0] = 'select'
+            if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
+                del self.touch[glfw.KEY_SPACE]
+                self.switch[0] = 'level'
         
         elif self.switch[0] == 'title':
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
                 glfw.set_window_should_close(self.window, glfw.TRUE)
-            if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
-                self.switch[0] = 'level_select_0'
+            if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
+                del self.touch[glfw.KEY_SPACE]
+                self.switch[0] = 'select'
+                self.switch[1] = 0
 
-        elif self.switch[0] == 'level_select_0':
-            self.level=0
+        elif self.switch[0] == 'select':
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
+                del self.touch[glfw.KEY_ESCAPE]
                 self.switch[0] = 'title'
+                
             if glfw.KEY_RIGHT in self.touch and self.touch[glfw.KEY_RIGHT] > 0:
                 del self.touch[glfw.KEY_RIGHT]
-                self.level=1
-                self.switch[0] = 'level_select_1'
-            if glfw.KEY_ENTER in self.touch and self.touch[glfw.KEY_ENTER] > 0:
-                print('='*20 + 'Started level' + '='*20)
+                self.switch[1] = min(self.switch[1]+1, len(self.terrain.get_files_list())-1)
+            
+            if glfw.KEY_LEFT in self.touch and self.touch[glfw.KEY_LEFT] > 0:
+                del self.touch[glfw.KEY_LEFT]
+                self.switch[1] = max(self.switch[1]-1, 0)
+                
+            
+            if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
+                del self.touch[glfw.KEY_SPACE]
+                self.terrain.set_level(self.terrain.get_files_list()[self.switch[1]])
+                self.terrain.load()
+                self.objs['level'] = self.terrain.get_obstacles()
+                print('='*10 + f'Started level {self.switch[1]}' + '='*10)
                 self.objs['common']['player'].step_start()
+                self.objs['common']['player'].deathcount = 0
                 self.switch[0] = 'level'
                 glfw.set_time(0)
                 #self.objs['common']['player'].death()
 
-        elif self.switch[0] == 'level_select_1':
-            if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
-                self.switch[0] = 'title'
-            if glfw.KEY_LEFT in self.touch and self.touch[glfw.KEY_LEFT] > 0:
-                del self.touch[glfw.KEY_LEFT]
-                self.level=0
-                self.switch[0] = 'level_select_0'
-            if glfw.KEY_RIGHT in self.touch and self.touch[glfw.KEY_RIGHT] > 0:
-                del self.touch[glfw.KEY_RIGHT]
-                self.level=2
-                self.switch[0] = 'level_select_2'
-            if glfw.KEY_ENTER in self.touch and self.touch[glfw.KEY_ENTER] > 0:
-                print('='*20 + 'Started level' + '='*20)
-                #self.objs['common']['player'].step_start()
-                self.switch[0] = 'level'
-                glfw.set_time(0)
-                #self.objs['common']['player'].death()
-
-        elif self.switch[0] == 'level_select_2':
-            if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
-                self.switch[0] = 'title'
-            if glfw.KEY_LEFT in self.touch and self.touch[glfw.KEY_LEFT] > 0:
-                del self.touch[glfw.KEY_LEFT]
-                self.level=1
-                self.switch[0] = 'level_select_1'
-            if glfw.KEY_ENTER in self.touch and self.touch[glfw.KEY_ENTER] > 0:
-                print('='*20 + 'Started level' + '='*20)
-                #self.objs['common']['player'].step_start()
-                self.switch[0] = 'level'
-                glfw.set_time(0)
-                #self.objs['common']['player'].death()
 
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().roll] -= 0.1
