@@ -8,11 +8,12 @@ class LevelError(Exception):
         super().__init__(*args)
 
 class Level():
-    def __init__(self, camera):
+    def __init__(self, camera, /, showhitbox=False):
         self.file = None
         self.files_list = self.get_level_files()
         self.camera = camera
         self.obs = []
+        self.showhitbox = showhitbox
     
     def get_level_files(self):
         levels = []
@@ -53,6 +54,8 @@ class Level():
         with open(self.file) as file:
             map = file.readlines()
 
+        self.obs = []
+        
         self.start_pos = None
         self.finish_line = None
         for y,row in enumerate(map):
@@ -85,15 +88,17 @@ class Level():
                 if element in ('.', 'S', '|'):
                     continue
                 elif element == '@':
-                    obj = obstacles.Cube(x, y, 0)
+                    obj = obstacles.Cube(x, y, 0, showhitbox=self.showhitbox)
                 elif element == '^':
-                    obj = obstacles.Spike(x, y, 0, 'UP')
+                    obj = obstacles.Spike(x, y, 0, 'UP', showhitbox=self.showhitbox)
                 elif element == 'v':
-                    obj = obstacles.Spike(x, y, 0, 'DOWN')
+                    obj = obstacles.Spike(x, y, 0, 'DOWN', showhitbox=self.showhitbox)
                 elif element == '<':
-                    obj = obstacles.Spike(x, y, 0, 'LEFT')
+                    obj = obstacles.Spike(x, y, 0, 'LEFT', showhitbox=self.showhitbox)
                 elif element == 'J':
-                    obj = obstacles.Jump(x,y, 0)
+                    obj = obstacles.Jump(x,y, 0, showhitbox=self.showhitbox)
+                elif element == 'D':
+                    obj = obstacles.DoubleJump(x,y, 0, showhitbox=self.showhitbox)
                 else:
                     raise LevelError(f"Unsupported element:'{element}'")
                 #print(x,y, element, j, i)

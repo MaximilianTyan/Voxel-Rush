@@ -11,6 +11,8 @@ from level import Level
 from menus import Menus
 import init
 
+
+
 def main():
     change2D = input("Replace 'texture2D' with 'texture' in .frag files ?\n\
             On linux, replacing 'texture2D' with 'texture' should work\n\
@@ -39,14 +41,14 @@ def main():
     init.init_classes() # initialises objects
     
     player = Player(mainSwitch)
-    #player.wireframe = True
+    #player.hitboxvisible = True
     viewer.add_ref_object('player', player)
     viewer.add_clocked_object(player)
     
     bkg = Background(camera)
     viewer.set_background(bkg.get_walls())
     
-    level = Level(camera)
+    level = Level(camera, showhitbox=False)
     viewer.set_terrain(level)
     viewer.add_clocked_object(level)
     

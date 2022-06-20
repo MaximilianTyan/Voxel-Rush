@@ -5,7 +5,7 @@ from cpe3d import Object3D, Transformation3D, Text
 import numpy as np
 import OpenGL.GL as GL
 import pyrr, time
-from obstacles import Spike, Cube, Jump, HitBox
+from obstacles import Spike, Cube, Jump, DoubleJump
 from hitbox import HitBox
 
 class Player(Object3D):
@@ -30,13 +30,25 @@ class Player(Object3D):
         self.acceleration = pyrr.Vector3([0, -50, 0])
         
         self.onground = True
-        
+        self.can_double_jump = False
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, transformation)
         
         self.hitbox = HitBox(self.bounding_box, [1, 1, 1])
-        self.hitboxvisible = True
-        self.wireframe = True
+        self.hitboxvisible = False
+        self.wireframe = False
         self.deathcount = 0
+    
+    def reset(self):
+        self.transformation.translation = pyrr.Vector3([0, 0, 0])
+        self.velocity = pyrr.Vector3([0, 0, 0])
+        self.acceleration = pyrr.Vector3([0, -50, 0])
+        
+        self.onground = True
+        self.can_double_jump = False
+        self.deathcount = 0
+        print('Player reseted')
+    
+    
     
     def set_terrain(self, terrain):
         self.terrain = terrain
@@ -86,11 +98,16 @@ class Player(Object3D):
         #print(self.transformation.translation, self.velocity, self.acceleration, self.transformation.offset, t, time.time())
     
     def jump(self):
-        if self.onground:
+        if self.onground or self.can_double_jump:
             #self.transformation.translation.y = 0
             self.velocity.y = 17
             self.onground = False
-            print('JUMPED')
+            
+            if self.can_double_jump:
+                print("DOUBLE JUMPED")
+                self.can_double_jump = False
+            else:
+                print('JUMPED')
     
     def longjump(self):
         self.velocity.y = 25
@@ -102,6 +119,7 @@ class Player(Object3D):
         #print(points_touched)
         if points_touched == [None]*8:
             self.onground = False
+            self.can_double_jump = False
             return
         
         #(1,4,2,6) bottom points
@@ -109,6 +127,8 @@ class Player(Object3D):
         
         for i in (5,8): #(3,5,7,8) top points
             obj = points_touched[i-1]
+            if isinstance(obj, DoubleJump):
+                self.can_double_jump = True
             if isinstance(obj, Cube):
                 print('Top collision with Cube')
                 self.death()
@@ -121,12 +141,16 @@ class Player(Object3D):
         recheck = False
         for i in (4,6): #(1,4,2,6) bottom points
             obj = points_touched[i-1]
+            
+            if isinstance(obj, DoubleJump):
+                self.can_double_jump = True
+                
             if isinstance(obj, Jump):
                 self.longjump()
                 return
                 
             elif isinstance(obj, Cube):
-                if abs(obj.transformation.translation.y - self.transformation.translation.y) >= 1 -0.4:
+                if abs(obj.transformation.translation.y - self.transformation.translation.y) >= 1 -0.5:
                     self.onground = True
                     self.transformation.translation.y = obj.transformation.translation.y + obj.bounding_box[1].y
                     #print('Avoided front collision')
