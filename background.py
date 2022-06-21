@@ -12,6 +12,7 @@ class Wall(Object3D):
         m.vertices = np.array([p + n + c + t for p, t in zip(points,texcoords)], np.float32)
         m.faces = np.array(faces, np.uint32)
         super().__init__(m.load_to_gpu(), m.get_nb_triangles(), texture, Transformation3D())
+        self.hitbox = None
     
 class Background():
     def __init__(self, camera):
@@ -23,7 +24,7 @@ class Background():
         
         texture = glutils.load_texture('ressources/textures/background.png')
         
-        points  = [[-5, 0, 0],    [-5, 5, 0],   [5, 5, 0],    [5, 0, 0]]
+        points  = [[-12, 0, 0],    [-12, 12, 0],   [12, 12, 0],    [12, 0, 0]]
         texcoords = [[0, 0],         [0, 1],       [1, 1],       [1, 0]]
         faces = [[0, 1, 2], [0, 2, 3]]
         wall = Wall(points, faces, texcoords, texture=texture)
@@ -31,13 +32,13 @@ class Background():
         self.wall_list.append(wall)
         
         frontwall = Wall(points, faces, texcoords, texture=texture)
-        frontwall.transformation.offset.y = -5
+        frontwall.transformation.offset.y = -12
         frontwall.transformation.offset.z = 1
         frontwall.set_name('frontwall')
         self.wall_list.append(frontwall)
         
-        points  = [[-5, 0, 1],    [-5, 0, 0],   [5, 0, 0],    [5, 0, 1]]
-        texcoords = [[0, 0],         [1, 0],       [1, 1],       [0, 1]]
+        points  = [[-12, 0, 1],    [-12, 0, 0],   [12, 0, 0],    [12, 0, 1]]
+        texcoords = [[0.9, 0],         [1, 0],       [1, 1],       [0.9, 1]]
         faces = [[0, 1, 2], [0, 2, 3]]
         wall = Wall(points, faces, texcoords, texture=texture)
         wall.set_name('pathway')

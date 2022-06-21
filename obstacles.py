@@ -124,9 +124,9 @@ class DoubleJump(Object3D):
         
         transformation = Transformation3D()
         transformation.translation = pyrr.Vector3([x,y,z])
-        transformation.offset = pyrr.Vector3([0.5, 0, 0.1])
+        transformation.offset = pyrr.Vector3([0.5, 0.5, 0.5])
 
-        self.bounding_box = (pyrr.Vector3([0,0,0]),  pyrr.Vector3([1,0.1,1]))
+        self.bounding_box = (pyrr.Vector3([0,0,0]),  pyrr.Vector3([1,1,1]))
         
         super().__init__(DoubleJump.vao, DoubleJump.triangles, DoubleJump.texture, transformation)
         self.hitbox = HitBox(self.bounding_box, [1, 1, 0])

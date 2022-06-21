@@ -115,9 +115,10 @@ class ViewerGL:
             
             #print('### LIST OBJS:', self.background, self.objs[self.switch[0]], self.objs['common'])
             #print('### LIST OBJS:',self.background, self.player, self.objs.get(self.switch[0], []), self.menus.get_text(self.switch))
-            obj_list = self.background + [self.player] + self.objs.get(self.switch[0], []) + self.menus.get_text(self.switch)
+            with_hitbox = [self.player] + self.objs.get(self.switch[0], []) 
+            obj_list = self.background + with_hitbox + self.menus.get_text(self.switch)
             #print(obj_list)
-            for obj in obj_list:
+            for i, obj in enumerate(obj_list):
                 if obj.visible:
                     if obj.program is None: 
                         raise Exception(f"Le programme de rendu n'a pas été précisé : {obj.program} at {obj}")
@@ -129,9 +130,10 @@ class ViewerGL:
                     obj.draw()
 
                     if obj.hitboxvisible or self.show_all_hitboxes:
-                        #print('draw hitbox', obj)
-                        obj.hitbox.transformation.translation = obj.transformation.translation
-                        obj.hitbox.draw()
+                        if obj in with_hitbox:
+                            #print('draw hitbox', obj)
+                            obj.hitbox.transformation.translation = obj.transformation.translation
+                            obj.hitbox.draw()
 
             # changement de buffer d'affichage pour éviter un effet de scintillement
             glfw.swap_buffers(self.window)
@@ -271,7 +273,9 @@ class ViewerGL:
         if glfw.KEY_H in self.touch and self.touch[glfw.KEY_H] > 0:
             del self.touch[glfw.KEY_H]                
             self.show_all_hitboxes = not self.show_all_hitboxes
-            print(self.show_all_hitboxes)
+            self.player.wireframe = self.show_all_hitboxes
+            print('show_all_hitboxes changed to', self.show_all_hitboxes)
+            
 
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().roll] -= 0.1
