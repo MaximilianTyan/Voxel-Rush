@@ -184,7 +184,7 @@ class Player(Object3D):
         px, py = self.transformation.translation.xy
         
         #print('position', px, py)
-        print('Near', self.terrain.get_near_obstacles(px, py))
+        #print('Near', self.terrain.get_near_obstacles(px, py))
         #print(self.get_aabb_points())
         
         points_touched = [None]*8

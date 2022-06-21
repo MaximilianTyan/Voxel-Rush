@@ -14,3 +14,6 @@ Basic copy of Geometry Dash intended for teaching OpenGL framework via it's pyth
 ## Collaborators
 - LANGUILLE Antoine
 - MICHELI Sebastien
+
+## Repository
+> https://github.com/MaximilianTyan/Voxel-Rush
