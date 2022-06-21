@@ -117,6 +117,8 @@ class DoubleJump(Object3D):
         cls.triangles = m.get_nb_triangles()
         
         cls.texture = glutils.load_texture('ressources/textures/sun.png')
+        
+        #cls.hitboxvao = s
     
     def __init__(self, x, y, z, /, showhitbox=False):
         

@@ -42,7 +42,7 @@ def main():
     
     player = Player(mainSwitch)
     #player.hitboxvisible = True
-    viewer.add_ref_object('player', player)
+    viewer.set_player(player)
     viewer.add_clocked_object(player)
     
     bkg = Background(camera)

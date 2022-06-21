@@ -8,7 +8,6 @@ import time
 import ctypes
 
 from cpe3d import Object3D
-from reflist import reflist
 
 class ViewerGL:
     def __init__(self, switch):
@@ -37,7 +36,7 @@ class ViewerGL:
         self.prevtime = 0
         self.background = []
         self.clocked_objs= []
-        self.objs = {'common':reflist()}
+        self.objs = {}
         self.touch = {}
         self.slow_time = False
         self.show_all_hitboxes = False
@@ -45,7 +44,7 @@ class ViewerGL:
     def run(self):
 
         # # Camera follow player
-        # player_pos = self.objs['common']['player'].transformation.translation.xyz
+        # player_pos = self.player.transformation.translation.xyz
         # cam_offset = pyrr.Vector3([3, 3, 10])
         # cam_center = [1,0,1] * player_pos + cam_offset
         # self.cam.transformation.translation = cam_center
@@ -67,7 +66,7 @@ class ViewerGL:
             
             self.update_key()
             
-            #print(self.objs['common']['player'].transformation.translation.x)
+            #print(self.player.transformation.translation.x)
             if self.switch[0] == 'level':
                 crt_time = glfw.get_time()
                 dt = crt_time - self.prevtime
@@ -79,10 +78,10 @@ class ViewerGL:
                 for obj in self.clocked_objs:
                     obj.tick_clock(dt, crt_time)
                 
-                if self.objs['common']['player'].transformation.translation.x >= self.terrain.finish_line:
+                if self.player.transformation.translation.x >= self.terrain.finish_line:
                     self.switch[0] = 'select'
                 
-                deaths = self.objs['common']['player'].deathcount
+                deaths = self.player.deathcount
                 self.menus.text_dict['level'][-1].format([deaths])
                 
             elif self.switch[0] == 'select':
@@ -90,11 +89,11 @@ class ViewerGL:
                 self.menus.text_dict['select'][-1].format([self.terrain.get_lvl_name(filename)])
             
             # Camera follow player
-            player_pos = self.objs['common']['player'].transformation.translation.xyz
+            player_pos = self.player.transformation.translation.xyz
             
             cam_offset = pyrr.Vector3([3, 0, 10])
             if self.switch[0] not in ('level', 'pause'):
-                cam_offset.x = self.objs['common']['player'].transformation.offset.x
+                cam_offset.x = self.player.transformation.offset.x
                 
             if player_pos.y < 6:
                 cam_offset.y = 3
@@ -111,12 +110,12 @@ class ViewerGL:
                 wall.transformation.translation.x = self.cam.transformation.translation.x
             
             #print('cam pos:\t', self.cam.transformation.translation.xyz)
-            #print('player pos:\t', self.objs['common']['player'].transformation.translation.xyz)
+            #print('player pos:\t', self.player.transformation.translation.xyz)
             #print('wall pos:\t', self.background[0].transformation.translation.xyz)
             
             #print('### LIST OBJS:', self.background, self.objs[self.switch[0]], self.objs['common'])
-            #print(self.background, self.objs.get(self.switch[0], []), self.objs['common'], self.menus.get_text(self.switch))
-            obj_list = self.background + self.objs.get(self.switch[0], []) + self.objs['common'] + self.menus.get_text(self.switch)
+            #print('### LIST OBJS:',self.background, self.player, self.objs.get(self.switch[0], []), self.menus.get_text(self.switch))
+            obj_list = self.background + [self.player] + self.objs.get(self.switch[0], []) + self.menus.get_text(self.switch)
             #print(obj_list)
             for obj in obj_list:
                 if obj.visible:
@@ -177,6 +176,9 @@ class ViewerGL:
     
     def set_menus(self, menus):
         self.menus = menus
+    
+    def set_player(self, player):
+        self.player = player
 
 
     def update_camera(self, prog):
@@ -202,16 +204,17 @@ class ViewerGL:
 
 
     def update_key(self):
+        
         if self.switch[0] == 'level':
             if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
-                self.objs['common']['player'].jump()
+                self.player.jump()
             if glfw.KEY_S in self.touch and self.touch[glfw.KEY_S] > 0:
                 self.slow_time = True
             else:
                 self.slow_time = False
             
             if glfw.KEY_R in self.touch and self.touch[glfw.KEY_R] > 0:
-                self.objs['common']['player'].death()
+                self.player.death()
                 
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
                 del self.touch[glfw.KEY_ESCAPE]
@@ -221,7 +224,7 @@ class ViewerGL:
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
                 del self.touch[glfw.KEY_ESCAPE]
                 self.switch[0] = 'select'
-                self.objs['common']['player'].reset()
+                self.player.reset()
                 
             if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
                 del self.touch[glfw.KEY_SPACE]
@@ -234,7 +237,7 @@ class ViewerGL:
                 del self.touch[glfw.KEY_SPACE]
                 self.switch[0] = 'select'
                 self.switch[1] = 0
-                self.objs['common']['player'].reset()
+                self.player.reset()
 
         elif self.switch[0] == 'select':
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
@@ -257,16 +260,18 @@ class ViewerGL:
                 self.objs['level'] = self.terrain.get_obstacles()
                 print('='*10 + f'Started level {self.switch[1]}' + '='*10)
                 
-                self.objs['common']['player'].reset()
-                self.objs['common']['player'].step_start()
+                self.player.reset()
+                #self.player.step_start()
 
                 self.switch[0] = 'level'
                 glfw.set_time(0)
                 self.prevtime = 0
 
-        if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
+                
+        if glfw.KEY_H in self.touch and self.touch[glfw.KEY_H] > 0:
             del self.touch[glfw.KEY_H]                
             self.show_all_hitboxes = not self.show_all_hitboxes
+            print(self.show_all_hitboxes)
 
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:
             self.cam.transformation.rotation_euler[pyrr.euler.index().roll] -= 0.1
