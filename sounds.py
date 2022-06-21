@@ -16,7 +16,6 @@ class AudioManager():
             
         self.sounds[name] = AudioPlayer(".\\ressources\\sounds\\" + str(filename))
         self.sounds[name].volume = 100
-        print(self.sounds)
     
     def restart_music(self):
         self.music.stop()

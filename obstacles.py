@@ -44,7 +44,7 @@ class Spike(Object3D):
         else:
             raise LevelError(f"Spike orientation not supported: {orientation}")
         
-        self.bounding_box =  (pyrr.Vector3([0, -0.01, 0]),  pyrr.Vector3([1, 0.7, 1]))
+        self.bounding_box =  (pyrr.Vector3([0, -0.01, 0]),  pyrr.Vector3([1, 0.6, 1]))
 
         super().__init__(Spike.vao, Spike.triangles, Spike.texture, transformation)
         
@@ -99,7 +99,7 @@ class Jump(Object3D):
         transformation.translation = pyrr.Vector3([x,y,z])
         transformation.offset = pyrr.Vector3([0.5, 0, 0.5])
 
-        self.bounding_box = (pyrr.Vector3([0,0,0]),  pyrr.Vector3([1,0.1,1]))
+        self.bounding_box = (pyrr.Vector3([0,-0.1,0]),  pyrr.Vector3([1,0.2,1]))
         
         super().__init__(Jump.vao, Jump.triangles, Jump.texture, transformation)
         self.hitbox = HitBox(self.bounding_box, [1, 1, 0])

@@ -277,7 +277,7 @@ class ViewerGL:
                 print('='*10 + f'Started level {self.switch[1]}' + '='*10)
                 
                 self.player.reset()
-                self.player.step_start()
+                #self.player.step_start()
 
                 self.switch[0] = 'level'
                 glfw.set_time(0)

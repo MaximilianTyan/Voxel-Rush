@@ -27,7 +27,8 @@ class Player(Object3D):
         
         transformation.translation = pyrr.Vector3([0, 0, 0])
         self.velocity = pyrr.Vector3([0, 0, 0])
-        self.acceleration = pyrr.Vector3([0, -50, 0])
+        self.acceleration = pyrr.Vector3([0, 0, 0])
+        
         
         self.onground = True
         self.can_double_jump = False
@@ -38,17 +39,20 @@ class Player(Object3D):
         self.wireframe = False
         self.deathcount = 0
         
+        self.reset()
+        
     
     def reset(self):
         self.transformation.translation = pyrr.Vector3([0, 0, 0])
         self.transformation.rotation_euler = pyrr.euler.create()
         self.velocity = pyrr.Vector3([0, 0, 0])
-        self.acceleration = pyrr.Vector3([0, -50, 0])
+        self.acceleration = pyrr.Vector3([0, -100, 0])
         
         self.onground = True
         self.can_double_jump = False
         self.deathcount = 0
         print('[PLAYER] Player reseted')
+        print('[PLAYER] Initial acceleration vector:', self.acceleration)
     
     def set_sound(self, sound):
         self.sound_manager = sound
@@ -70,8 +74,8 @@ class Player(Object3D):
         self.velocity = self.velocity + dt * self.acceleration 
         if self.onground:
             self.velocity.y = 0
-        if self.velocity.y < -17:
-            self.velocity.y = -17
+        if self.velocity.y < -26:
+            self.velocity.y = -26
         
         #print('velocity', self.velocity)
         self.transformation.translation = self.transformation.translation + dt * self.velocity
@@ -100,14 +104,14 @@ class Player(Object3D):
         self.deathcount += 1
     
     def step_start(self):
-        self.velocity.x = 9
+        self.velocity.x = 10
         
         #print(self.transformation.translation, self.velocity, self.acceleration, self.transformation.offset, t, time.time())
     
     def jump(self):
         if self.onground or self.can_double_jump:
             #self.transformation.translation.y = 0
-            self.velocity.y = 17
+            self.velocity.y = 26
             self.onground = False
             
             if self.can_double_jump:
@@ -117,7 +121,7 @@ class Player(Object3D):
                 print('[PLAYER] JUMPED')
     
     def longjump(self):
-        self.velocity.y = 25
+        self.velocity.y = 35
         self.onground = False
         print('[PLAYER] LONG JUMPED')
     
@@ -131,6 +135,7 @@ class Player(Object3D):
         
         #(1,4,2,6) bottom points
         #(3,5,7,8) top points
+        print(points_touched)
         
         for i in (5,8): #(3,5,7,8) top points
             obj = points_touched[i-1]
@@ -145,6 +150,7 @@ class Player(Object3D):
                 self.death()
                 return
         
+        
         recheck = False
         for i in (4,6): #(1,4,2,6) bottom points
             obj = points_touched[i-1]
@@ -157,7 +163,7 @@ class Player(Object3D):
                 return
                 
             elif isinstance(obj, Cube):
-                if abs(obj.transformation.translation.y - self.transformation.translation.y) >= 1 -0.5:
+                if abs(obj.transformation.translation.y - self.transformation.translation.y) >= 1 -0.8:
                     self.onground = True
                     self.transformation.translation.y = obj.transformation.translation.y + obj.bounding_box[1].y
                     #print('Avoided front collision')
@@ -179,7 +185,7 @@ class Player(Object3D):
         px, py = self.transformation.translation.xy
         
         #print('position', px, py)
-        #print('Near', self.terrain.get_near_obstacles(px, py))
+        print('Near', self.terrain.get_near_obstacles(px, py))
         #print(self.get_aabb_points())
         
         points_touched = [None]*8
