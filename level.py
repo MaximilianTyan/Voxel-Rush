@@ -106,7 +106,6 @@ class Level():
                     obj = obstacles.DoubleJump(x,y, 0, showhitbox=self.showhitbox)
                 else:
                     raise LevelError(f"Unsupported element:'{element}'")
-                #print(x,y, element, j, i)
                 self.add_element(obj)
 
     def tick_clock(self, dt, crttime):

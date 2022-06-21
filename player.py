@@ -74,8 +74,8 @@ class Player(Object3D):
         self.velocity = self.velocity + dt * self.acceleration 
         if self.onground:
             self.velocity.y = 0
-        if self.velocity.y < -26:
-            self.velocity.y = -26
+        if self.velocity.y < -25.5:
+            self.velocity.y = -25.5
         
         #print('velocity', self.velocity)
         self.transformation.translation = self.transformation.translation + dt * self.velocity
@@ -90,8 +90,7 @@ class Player(Object3D):
             self.onground = True
         
         #print('final position', self.transformation.translation)
-        #print('-'*25)
-        #print(self.transformation.translation - prev_pos)
+        #print('deplacement', self.transformation.translation - prev_pos)
 
     def death(self):
         print('[PLAYER] You died')
@@ -111,7 +110,7 @@ class Player(Object3D):
     def jump(self):
         if self.onground or self.can_double_jump:
             #self.transformation.translation.y = 0
-            self.velocity.y = 26
+            self.velocity.y = 25.5
             self.onground = False
             
             if self.can_double_jump:
@@ -135,7 +134,7 @@ class Player(Object3D):
         
         #(1,4,2,6) bottom points
         #(3,5,7,8) top points
-        print(points_touched)
+        #print(points_touched)
         
         for i in (5,8): #(3,5,7,8) top points
             obj = points_touched[i-1]
@@ -197,5 +196,9 @@ class Player(Object3D):
             for i, point in enumerate(self.get_aabb_points()):
                 if minpt.x <= point.x <= maxpt.x and minpt.y <= point.y <= maxpt.y and minpt.z <= point.z <= maxpt.z:
                     #print(i, obj, minpt, maxpt, point)
+                    if not isinstance(points_touched[i], Cube) and (points_touched[i] != None):
+                        #print('Continued', obj)
+                        continue
                     points_touched[i] = obj
+                    
         return points_touched

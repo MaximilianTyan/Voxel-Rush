@@ -16,9 +16,6 @@ class Wall(Object3D):
     
 class Background():
     def __init__(self, camera):
-
-        # points  = [[-25, 0, -25],    [25, 0, -25],   [25, 0, 25],    [-25, 0, 25]]
-        # texcoords = [[0, 0],           [1, 0],         [1, 1],         [0, 1]]
         self.wall_list = []
         self.cam = camera
         

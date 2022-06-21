@@ -23,9 +23,7 @@ class AudioManager():
     
     def load_music(self, filename):
         if isinstance(self.music, AudioPlayer):
-            #print(self.music.filename)
             self.music.close()
-            #print(self.music.filename)
         
         if filename == 'None':
             print('[SOUNDS] No music to load, stopping current music')
@@ -34,5 +32,4 @@ class AudioManager():
         print('[SOUNDS] Loading music .\\ressources\\musics\\' + str(filename))
         
         self.music = AudioPlayer(".\\ressources\\musics\\" + str(filename))
-        #print(self.music.filename)
         self.music.volume = 75

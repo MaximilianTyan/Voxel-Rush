@@ -155,11 +155,9 @@ class Text(Object):
         #print('Draw', self.__repr__())
         #print(self.value, self.spec_chars)
         parts = self.value.split('&')
-        #print('-'*5,'new line:', self.value, parts, self.spec_chars)
         display_value = parts[0]
         for i, char in enumerate(self.spec_chars):
             display_value += str(char) + parts[i+1]
-        #print('display', display_value)
         
         if Text.program is None: 
             raise Exception("Le programme de rendu n'a pas été précisé")
