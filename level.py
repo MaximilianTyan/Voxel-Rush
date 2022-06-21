@@ -8,12 +8,13 @@ class LevelError(Exception):
         super().__init__(*args)
 
 class Level():
-    def __init__(self, camera, /, showhitbox=False):
+    def __init__(self, camera, sounds, /, showhitbox=False):
         self.file = None
         self.files_list = self.get_level_files()
         self.camera = camera
         self.obs = []
         self.showhitbox = showhitbox
+        self.musicmanager = sounds
     
     def get_level_files(self):
         levels = []
@@ -52,9 +53,13 @@ class Level():
     def load(self):
         print("Loading level {}...".format(self.file))
         with open(self.file) as file:
-            map = file.readlines()
-
+            raw = file.readlines()
         self.obs = []
+        
+        music, map = raw[0].strip(), raw[1:]
+        
+        print("Loading music {}...".format(music))
+        self.musicmanager.load_music(music)
         
         self.start_pos = None
         self.finish_line = None
@@ -107,7 +112,7 @@ class Level():
     def tick_clock(self, dt, crttime):
         cx, cy, cz = self.camera.transformation.translation.xyz
         
-        test_offset = -1
+        test_offset = -3
         
         FOV_width = abs((cz - test_offset) * math.tan((180/math.pi)*self.camera.fovx)/2 )
         FOV_height = abs((cz - test_offset) * math.tan((180/math.pi)*self.camera.fovy)/2)
@@ -128,5 +133,3 @@ class Level():
             #print(element.transformation.translation.xyz, element.visible)
         
     
-
-

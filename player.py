@@ -37,18 +37,22 @@ class Player(Object3D):
         self.hitboxvisible = False
         self.wireframe = False
         self.deathcount = 0
+        
     
     def reset(self):
         self.transformation.translation = pyrr.Vector3([0, 0, 0])
+        self.transformation.rotation_euler = pyrr.euler.create()
         self.velocity = pyrr.Vector3([0, 0, 0])
         self.acceleration = pyrr.Vector3([0, -50, 0])
         
         self.onground = True
         self.can_double_jump = False
         self.deathcount = 0
-        print('Player reseted')
+        print('[PLAYER] Player reseted')
     
-    
+    def set_sound(self, sound):
+        self.sound_manager = sound
+        self.sound_manager.load_sound('death', 'geometry-dash-death-sound-effect.mp3')
     
     def set_terrain(self, terrain):
         self.terrain = terrain
@@ -86,14 +90,17 @@ class Player(Object3D):
         #print(self.transformation.translation - prev_pos)
 
     def death(self):
-        print('You died')
+        print('[PLAYER] You died')
+        self.sound_manager.sounds['death'].play()
+        self.sound_manager.restart_music()
         self.transformation.translation = pyrr.Vector3([0, 0, 0])
+        self.transformation.rotation = pyrr.euler.create()
         self.step_start()
         self.onground = True
         self.deathcount += 1
     
     def step_start(self):
-        self.velocity.x = 10
+        self.velocity.x = 9
         
         #print(self.transformation.translation, self.velocity, self.acceleration, self.transformation.offset, t, time.time())
     
@@ -104,15 +111,15 @@ class Player(Object3D):
             self.onground = False
             
             if self.can_double_jump:
-                print("DOUBLE JUMPED")
+                print("[PLAYER] DOUBLE JUMPED")
                 self.can_double_jump = False
             else:
-                print('JUMPED')
+                print('[PLAYER] JUMPED')
     
     def longjump(self):
         self.velocity.y = 25
         self.onground = False
-        print('LONG JUMPED')
+        print('[PLAYER] LONG JUMPED')
     
     def test_collisions(self, hasSpareChance=True):
         points_touched = self.check_points()
@@ -130,11 +137,11 @@ class Player(Object3D):
             if isinstance(obj, DoubleJump):
                 self.can_double_jump = True
             if isinstance(obj, Cube):
-                print('Top collision with Cube')
+                print('[PLAYER] Top collision with Cube')
                 self.death()
                 return
             elif isinstance(obj, Spike):
-                print('Top collision with Spike')
+                print('[PLAYER] Top collision with Spike')
                 self.death()
                 return
         
@@ -156,7 +163,7 @@ class Player(Object3D):
                     #print('Avoided front collision')
                     recheck = True
                 else:
-                    print('Front collision with Cube')
+                    print('[PLAYER] Front collision with Cube')
                     self.death()
                     return
             

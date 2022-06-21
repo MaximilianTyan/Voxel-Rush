@@ -78,25 +78,6 @@ class Object3D(Object):
         pmax3 = maxpt - delta * [0, 0, 1]
 
         return minpt,  pmin1, pmin2, pmin3, pmax1, pmax2, pmax3, maxpt
-    
-    def get_aabb_faces_center(self):
-        minpt, maxpt = self.bounding_box
-        delta = maxpt - minpt
-        center = self.get_coords() + self.transformation.offset
-        
-        half_dx = delta * [1, 0, 0] / 2
-        negx = center - half_dx
-        posx = center + half_dx
-        
-        half_dy = delta * [0, 1, 0] / 2
-        negy = center - half_dy
-        posy = center + half_dy
-        
-        half_dz = delta * [0, 0, 1] / 2
-        negz = center - half_dz
-        posz = center + half_dz
-
-        return negx, posx, negy, posy, negz, posz
         
     def get_coords(self):
         return self.transformation.translation.xyz

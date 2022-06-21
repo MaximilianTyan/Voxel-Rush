@@ -31,7 +31,7 @@ class ViewerGL:
         GL.glEnable(GL.GL_DEPTH_TEST)
         
         GL.glClearColor(0.5, 0.6, 0.9, 1.0)
-        print(f"OpenGL: {GL.glGetString(GL.GL_VERSION).decode('ascii')}")
+        print(f"[SETUP] OpenGL: {GL.glGetString(GL.GL_VERSION).decode('ascii')}")
 
         self.prevtime = 0
         self.background = []
@@ -40,6 +40,7 @@ class ViewerGL:
         self.touch = {}
         self.slow_time = False
         self.show_all_hitboxes = False
+        
 
     def run(self):
 
@@ -49,14 +50,18 @@ class ViewerGL:
         # cam_center = [1,0,1] * player_pos + cam_offset
         # self.cam.transformation.translation = cam_center
         # self.cam.transformation.rotation_center = cam_center
+        print('-'*10 + "Objects" + '-'*10)
+        print('[RUN] camera:', self.cam)
+        print('[RUN] background:', self.background)
+        print('[RUN] terrain:', self.terrain)
+        print('[RUN] menus:', self.menus)
+        print('[RUN] sounds:', self.musicmanager)
+        print('[RUN] objs:', self.objs)
+        print('[RUN] clocked:', self.clocked_objs)
         
-        print('camera:', self.cam)
-        print('background:', self.background)
-        print('terrain:', self.terrain)
-        print('menus:', self.menus)
-        
-        print('objs:', self.objs)
-        print('clocked:', self.clocked_objs)
+        self.musicmanager.load_music('robtop-geometry-dash-menu-theme.mp3')
+        self.musicmanager.music.play(loop=True)
+        self.musicmanager.load_sound('victory', 'ff-vii-victory-theme.mp3')
         
         # boucle d'affichage
         while not glfw.window_should_close(self.window):
@@ -80,6 +85,9 @@ class ViewerGL:
                 
                 if self.player.transformation.translation.x >= self.terrain.finish_line:
                     self.switch[0] = 'select'
+                    self.player.reset()
+                    self.musicmanager.music.stop()
+                    self.musicmanager.sounds['victory'].play(block=True)
                 
                 deaths = self.player.deathcount
                 self.menus.text_dict['level'][-1].format([deaths])
@@ -182,6 +190,8 @@ class ViewerGL:
     def set_player(self, player):
         self.player = player
 
+    def set_sound(self, sound):
+        self.musicmanager = sound
 
     def update_camera(self, prog):
         GL.glUseProgram(prog)
@@ -221,16 +231,20 @@ class ViewerGL:
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
                 del self.touch[glfw.KEY_ESCAPE]
                 self.switch[0] = 'pause'
+                self.musicmanager.music.pause()
                 
         elif self.switch[0] == 'pause':
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
                 del self.touch[glfw.KEY_ESCAPE]
                 self.switch[0] = 'select'
                 self.player.reset()
+                self.musicmanager.load_music('robtop-geometry-dash-menu-theme.mp3')
+                self.musicmanager.music.play(loop=True)
                 
             if glfw.KEY_SPACE in self.touch and self.touch[glfw.KEY_SPACE] > 0:
                 del self.touch[glfw.KEY_SPACE]
                 self.switch[0] = 'level'
+                self.musicmanager.music.resume()
         
         elif self.switch[0] == 'title':
             if glfw.KEY_ESCAPE in self.touch and self.touch[glfw.KEY_ESCAPE] > 0:
@@ -263,18 +277,19 @@ class ViewerGL:
                 print('='*10 + f'Started level {self.switch[1]}' + '='*10)
                 
                 self.player.reset()
-                #self.player.step_start()
+                self.player.step_start()
 
                 self.switch[0] = 'level'
                 glfw.set_time(0)
                 self.prevtime = 0
+                self.musicmanager.music.play()
 
                 
         if glfw.KEY_H in self.touch and self.touch[glfw.KEY_H] > 0:
             del self.touch[glfw.KEY_H]                
             self.show_all_hitboxes = not self.show_all_hitboxes
             self.player.wireframe = self.show_all_hitboxes
-            print('show_all_hitboxes changed to', self.show_all_hitboxes)
+            print('[KEY] show_all_hitboxes changed to', self.show_all_hitboxes)
             
 
         if glfw.KEY_I in self.touch and self.touch[glfw.KEY_I] > 0:

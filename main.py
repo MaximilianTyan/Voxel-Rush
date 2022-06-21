@@ -9,6 +9,7 @@ from player import Player
 from background import Background
 from level import Level
 from menus import Menus
+from sounds import AudioManager
 import init
 
 
@@ -21,6 +22,7 @@ def main():
             Proceed to replace ? y/n\n>")
     folder = 'frag_2D' if change2D == 'y' else 'frag_no2D'
     
+    print('[SETUP] Using', folder, 'folder to compile fragment shaders')
     
     mainSwitch = ['title', 0]
     
@@ -40,7 +42,11 @@ def main():
     
     init.init_classes() # initialises objects
     
+    sounds = AudioManager()
+    viewer.set_sound(sounds)
+    
     player = Player(mainSwitch)
+    player.set_sound(sounds)
     #player.hitboxvisible = True
     viewer.set_player(player)
     viewer.add_clocked_object(player)
@@ -48,7 +54,7 @@ def main():
     bkg = Background(camera)
     viewer.set_background(bkg.get_walls())
     
-    level = Level(camera, showhitbox=False)
+    level = Level(camera, sounds, showhitbox=False)
     viewer.set_terrain(level)
     viewer.add_clocked_object(level)
     
